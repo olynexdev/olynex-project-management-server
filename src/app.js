@@ -4,6 +4,8 @@ const morgan = require("morgan");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const departmentRoutes = require("./routes/department.routes.js");
+const fileTypeRoutes = require("./routes/fileType.routes.js");
+const categoryRoutes = require("./routes/category.routes.js")
 
 const app = express();
 
@@ -20,8 +22,10 @@ app.get("/", (req, res) => {
   res.send("Olynex management server running!");
 });
 
-//*All Routes
-app.use("/api/v1/", departmentRoutes);
+//*All Routes with CRUD
+app.use("/api/v1/", departmentRoutes); // department routes
+app.use("/api/v1/", fileTypeRoutes); // file type routes
+app.use("/api/v1/", categoryRoutes) // ategory routes
 
 // Error handling middleware
 const errorHandler = require("./middlewares/errorHandler");
