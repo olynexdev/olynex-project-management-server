@@ -1,10 +1,10 @@
-const Department = require("../../models/department.model");
+const DepartmentModel = require("../../models/department.model")
 
 // post new department
 exports.addDepartment = async (req, res) => {
     const body = req.body; // req to frontend
     try {
-        const result = await Department.create(body);
+        const result = await DepartmentModel.create(body);
         res.status(201).send(result);
     } catch (error) {
         res.status(500).send({ message: "Department Insert Error!", error });
@@ -14,7 +14,7 @@ exports.addDepartment = async (req, res) => {
 // get all department data 
 exports.getDepartment = async(req, res) =>{
     try{
-        const result = await Department.find();
+        const result = await DepartmentModel.find();
         res.status(201).send(result)
     }catch(err){
         res.status(500).send({ message: "Department get Error!", err });
@@ -26,7 +26,7 @@ exports.deleteDepartment = async (req, res) => {
     const departmentId = req.params.id; // Get the department ID from request params
     try {
         // Use Mongoose deleteOne to delete the department
-        const result = await Department.deleteOne({ _id: departmentId });
+        const result = await DepartmentModel.deleteOne({ _id: departmentId });
         if (result.deletedCount === 1) {
             res.status(200).send({ message: "Department deleted successfully" });
         } else {
@@ -43,7 +43,7 @@ exports.updateDepartment = async (req, res) => {
     const updateData = req.body; 
     try {
         // Use Mongoose updateOne to update the department
-        const result = await Department.updateOne({ _id: departmentId }, updateData);
+        const result = await DepartmentModel.updateOne({ _id: departmentId }, updateData);
          res.status(200).send(result);
     } catch (err) {
         res.status(500).send({ message: "Error updating department", error: err });
