@@ -5,7 +5,8 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const departmentRoutes = require("./routes/department.routes.js");
 const fileTypeRoutes = require("./routes/fileType.routes.js");
-const categoryRoutes = require("./routes/category.routes.js")
+const categoryRoutes = require("./routes/category.routes.js");
+const productsRoutes = require("./routes/productListing.routes.js")
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/", departmentRoutes); // department routes
 app.use("/api/v1/", fileTypeRoutes); // file type routes
 app.use("/api/v1/", categoryRoutes) // ategory routes
+app.use("/api/v1/", productsRoutes) // products routes
 
 // Error handling middleware
 const errorHandler = require("./middlewares/errorHandler");
