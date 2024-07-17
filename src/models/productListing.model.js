@@ -29,6 +29,10 @@ const productListingSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  productId: {
+    type: Number,
+    required: true,
+  },
 }, { timestamps: true });
 
 const ProductListingModel = mongoose.model("ProductListing", productListingSchema);

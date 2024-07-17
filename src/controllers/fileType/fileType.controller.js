@@ -40,10 +40,10 @@ exports.deleteFileType = async (req, res) => {
 
 // Update a specific fileTYpe by ID
 exports.updateFileType = async (req, res) => {
-    const fileTypeId = req.params.id;
+    const productId = req.params.id;
     const updateData = req.body; 
     try {
-        const result = await FileTypeModel.updateOne({ _id: fileTypeId }, updateData);
+        const result = await FileTypeModel.updateOne({ _id: productId }, updateData);
          res.status(200).send(result);
     } catch (err) {
         res.status(500).send({ message: "Error updating File Type", error: err });
