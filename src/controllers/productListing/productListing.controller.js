@@ -14,14 +14,12 @@ const getNextProductId = async () => {
 
 exports.addProduct = async (req, res) => {
   const body = req.body; // req to frontend
-
   try {
     // Get the next product ID
     const nextProductId = await getNextProductId();
-
+    
     // Assign the next product ID to the body
     body.productId = nextProductId;
-
     // Create the new product
     const result = await ProductListingModel.create(body);
     res.status(201).send(result);
@@ -30,15 +28,29 @@ exports.addProduct = async (req, res) => {
   }
 };
 
-// get all products data
+// get all products data with pagination and categories
 exports.getProducts = async (req, res) => {
   try {
-    const result = await ProductListingModel.find();
-    res.status(201).send(result);
+    const { page = 1, category = "" } = req.query; //
+    const limit = 10; // page limit
+    const skip = (page - 1) * limit; // page skip
+
+    const query = category ? { category } : {};
+
+    // count page
+    const totalProducts = await ProductListingModel.countDocuments(query);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    // find product with pagination query
+    const products = await ProductListingModel.find(query).skip(skip).limit(limit);
+    
+    res.status(201).send({ products, totalPages });
   } catch (err) {
     res.status(500).send({ message: "Products get Error!", err });
   }
 };
+
+
 // get single product data
 exports.getProduct = async (req, res) => {
     const productId = req.params?.id;

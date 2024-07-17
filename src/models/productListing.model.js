@@ -33,6 +33,10 @@ const productListingSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  used:{
+    type: Boolean,
+    required: true
+  }
 }, { timestamps: true });
 
 const ProductListingModel = mongoose.model("ProductListing", productListingSchema);
