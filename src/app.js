@@ -4,9 +4,11 @@ const morgan = require("morgan");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const departmentRoutes = require("./routes/department.routes.js");
+const designationRoutes = require("./routes/designation.routes.js");
 const fileTypeRoutes = require("./routes/fileType.routes.js");
 const categoryRoutes = require("./routes/category.routes.js");
 const productsRoutes = require("./routes/productListing.routes.js")
+const userRoutes = require("./routes/user.routes.js")
 
 const app = express();
 
@@ -25,9 +27,11 @@ app.get("/", (req, res) => {
 
 //*All Routes with CRUD
 app.use("/api/v1/", departmentRoutes); // department routes
+app.use("/api/v1/", designationRoutes); // designation routes
 app.use("/api/v1/", fileTypeRoutes); // file type routes
 app.use("/api/v1/", categoryRoutes) // ategory routes
 app.use("/api/v1/", productsRoutes) // products routes
+app.use("/api/v1/", userRoutes) // user all routers
 
 // Error handling middleware
 const errorHandler = require("./middlewares/errorHandler");
