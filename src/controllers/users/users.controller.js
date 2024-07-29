@@ -11,15 +11,6 @@ exports.addUser = async (req, res) => {
     }
 };
 
-// get all users data
-exports.getUsers = async(req, res) =>{
-    try{
-        const result = await UserModel.find();
-        res.status(201).send(result)
-    }catch(err){
-        res.status(500).send({ message: "User get Error!", err });
-    }
-}
 
 // Delete a specific user by database _id
 exports.deleteUser = async (req, res) => {
