@@ -51,7 +51,7 @@ exports.getUserWithRole = async (req, res) => {
       const roles = {
         ceo: designation === "ceo",
         hr: designation === "hr",
-        co_ordinetor: designation === "co_ordinetor",
+        co_ordinator: designation === "co_ordinator",
         project_manager: designation === "project_manager",
         mockup: designation === "mockup",
         seo: designation === "seo",
