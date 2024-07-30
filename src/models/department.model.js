@@ -6,8 +6,10 @@ const DepartmentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-}, { timestamps: true });
+}, 
+{ timestamps: true }
+);
 
-const Department = mongoose.model('Department', DepartmentSchema);
+const DepartmentModel = mongoose.model('Department', DepartmentSchema);
 
-module.exports = Department;
+module.exports = DepartmentModel;
