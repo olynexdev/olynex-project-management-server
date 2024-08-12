@@ -9,6 +9,7 @@ const fileTypeRoutes = require("./routes/fileType.routes.js");
 const categoryRoutes = require("./routes/category.routes.js");
 const productsRoutes = require("./routes/productListing.routes.js")
 const userRoutes = require("./routes/user.routes.js")
+const taskRoutes = require("./routes/task.routes.js")
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/v1/", fileTypeRoutes); // file type routes
 app.use("/api/v1/", categoryRoutes) // ategory routes
 app.use("/api/v1/", productsRoutes) // products routes
 app.use("/api/v1/", userRoutes) // user all routers
+app.use("/api/v1", taskRoutes)
 
 // Error handling middleware
 const errorHandler = require("./middlewares/errorHandler");

@@ -10,34 +10,34 @@ const taskSchema = new mongoose.Schema(
     taskStartDate: { type: String, required: true },
     taskDeadline: { type: String, required: true },
     status: { type: String, required: true },
-    taskTimer: { type: String, required: true },
+    taskTimer: { type: String},
     taskResource: {
       url: { type: String, required: true },
-      view: { type: String, required: false },
+      view: { type: Boolean, required: false },
     },
     taskCreator: {
-      designation: { type: String, required: true, default: 'Coordinator' },
-      userId: { type: String, required: true },
+      designation: { type: String, required: true },
+      userId: { type: Number, required: true },
       name: { type: String, required: true },
     },
     taskReceiver: {
-      designation: { type: String, required: true, default: 'Employee' },
-      userId: { type: String, required: true },
+      designation: { type: String, required: true },
+      userId: { type: Number, required: true },
       name: { type: String, required: true },
     },
     approvalChain: [
       {
         designation: { type: String },
-        userId: { type: String },
+        userId: { type: Number },
         name: { type: String },
-        status: { type: String, default: 'Pending' },
+        status: { type: String },
         approvedDate: { type: Date, default: null },
         comments: { type: String, default: '' },
       },
     ],
     submitInfo: [
       {
-        Note: { type: String },
+        note: { type: String },
         fileUrl: { type: String },
         uploadedBy: { type: String },
         uploadDate: { type: String },

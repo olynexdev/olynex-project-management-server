@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const productListingSchema = new mongoose.Schema({
+  taskCreator:{
+    designation: { type: String},
+    userId: {type: Number},
+    name: {type: String}
+  },
   department: {
     type: String,
     required: true,
