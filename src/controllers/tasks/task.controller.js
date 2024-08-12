@@ -10,3 +10,13 @@ exports.addTask = async (req, res) => {
     res.status(500).send({ message: 'Task Adding Error!', error });
   }
 };
+
+// get all tasks
+exports.getTasks = async(req, res)=>{
+  try{
+    const result = await TasksModel.find();
+    res.send(result)
+  }catch(err){
+    res.status(501).send({message: "Tasks get failed", err})
+  }
+}
