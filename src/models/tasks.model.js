@@ -10,7 +10,7 @@ const taskSchema = new mongoose.Schema(
     taskStartDate: { type: String, required: true },
     taskDeadline: { type: String, required: true },
     status: { type: String, required: true },
-    taskTimer: { type: String},
+    taskTimer: { type: String },
     taskResource: {
       url: { type: String, required: true },
       view: { type: Boolean, required: false },
