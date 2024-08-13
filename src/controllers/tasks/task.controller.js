@@ -11,12 +11,29 @@ exports.addTask = async (req, res) => {
   }
 };
 
-// get all tasks
-exports.getTasks = async(req, res)=>{
-  try{
-    const result = await TasksModel.find();
-    res.send(result)
-  }catch(err){
-    res.status(501).send({message: "Tasks get failed", err})
+// get all tasks with pagination
+exports.getTasks = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query; 
+    const skip = (page - 1) * limit; // Calculate the number of documents to skip
+
+    // Get the total count of tasks
+    const totalTasks = await TasksModel.countDocuments();
+
+    // Find tasks with pagination
+    const tasks = await TasksModel.find()
+      .skip(skip)  
+      .limit(parseInt(limit)); 
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalTasks / limit);
+
+    // Send the paginated tasks with total pages
+    res.status(200).send({
+      tasks,
+      totalPages
+    });
+  } catch (err) {
+    res.status(500).send({ message: "Failed to retrieve tasks", err });
   }
-}
+};
