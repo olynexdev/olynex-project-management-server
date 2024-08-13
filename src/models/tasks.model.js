@@ -8,6 +8,7 @@ const taskSchema = new mongoose.Schema(
     department: { type: String, required: true },
     description: { type: String, required: true },
     taskStartDate: { type: String, required: true },
+    file_types:[],
     taskDeadline: { type: String, required: true },
     status: { type: String, required: true },
     taskTimer: { type: String },
@@ -31,8 +32,8 @@ const taskSchema = new mongoose.Schema(
         userId: { type: Number },
         name: { type: String },
         status: { type: String },
-        approvedDate: { type: Date, default: null },
-        comments: { type: String, default: '' },
+        date: { type: Date, default: null },
+        comment: { type: String, default: '' },
       },
     ],
     submitInfo: [
