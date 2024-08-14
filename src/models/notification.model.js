@@ -6,6 +6,7 @@ const notificationSchema = new mongoose.Schema(
     taskReceiverId: { type: Number, required: true },
     taskSenderId: { type: Number, required: true },
     text: { type: String, required: true },
+    isRead: { type: Boolean, required: true },
   },
   { timestamps: true }
 );

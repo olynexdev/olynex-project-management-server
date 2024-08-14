@@ -29,3 +29,17 @@ exports.getNotification = async (req, res) => {
     res.status(500).send({ message: 'Cannot get notification!', error });
   }
 };
+
+exports.updateReadNotification = async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  try {
+    const result = await NotificationModel.updateOne(
+      { _id: id },
+      { isRead: true }
+    );
+    res.status(201).send(result);
+  } catch (error) {
+    res.status(500).send({ message: 'Cannot read notification!', error });
+  }
+};

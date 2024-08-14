@@ -1,13 +1,12 @@
 const http = require('http');
 const socketIO = require('socket.io');
-
 const app = require('./app');
 
 const PORT = process.env.PORT || 5000;
 
 const server = http.createServer(app);
 const io = socketIO(server, {
-  pingTimeOut: 60000,
+  pingTimeout: 60000,
   cors: {
     origin: ['http://localhost:5173'], // Allow the frontend to connect
   },
@@ -16,11 +15,17 @@ const io = socketIO(server, {
 io.on('connection', socket => {
   console.log('A user connected:', socket.id);
 
+  // Handle user joining a room based on their ID
+  socket.on('joinRoom', userId => {
+    socket.join(userId);
+    console.log(`User ${socket.id} joined room ${userId}`);
+  });
+
   // Listen for notification events
   socket.on('sendNotification', data => {
-    console.log('notification data', data);
+    console.log('Notification data:', data);
     // Emit the notification to the specific user by taskReceiverId
-    socket.in(data?.receiverId).emit('receiveNotification', data);
+    io.to(data.taskReceiverId).emit('receiveNotification', data);
   });
 
   socket.on('disconnect', () => {
