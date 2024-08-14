@@ -37,3 +37,23 @@ exports.getTasks = async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve tasks", err });
   }
 };
+
+exports.getTask = async (req, res) => {
+  const { id } = req.params; // Extract the task ID from request parameters
+
+  try {
+    // Find a task by its ID
+    const task = await TasksModel.findById(id);
+
+    if (!task) {
+      // Return 404 if task is not found
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    // Return the found task
+    res.status(200).json(task);
+  } catch (error) {
+    // Handle any errors that occurred
+    res.status(500).json({ message: "Error retrieving task", error });
+  }
+};
