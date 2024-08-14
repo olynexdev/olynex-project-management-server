@@ -5,7 +5,7 @@ const fs = require('fs');
 // Create an instance of smbClient (fill in your details)
 const client = new smbClient({
   share: '\\\\your-samba-server\\shared-folder',
-  domain: 'your-domain',
+  domain: '',
   username: 'your-username',
   password: 'your-password',
 });
