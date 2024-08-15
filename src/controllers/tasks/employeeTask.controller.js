@@ -40,7 +40,7 @@ exports.employeeAcceptTask = async (req, res) => {
 exports.employeeSubmitTask = async (req, res) => {
   try {
     const { id } = req.params; // Assuming taskId is passed in URL params
-    const { approvalChainUpdate, coordinatorComment, submitInfo } = req.body;
+    const { approvalChainUpdate, coordinatorComment, submitInfo, employeeStatus } = req.body;
 
     // Find the task by taskId
     const task = await TaskModel.findById(id);
@@ -56,9 +56,20 @@ exports.employeeSubmitTask = async (req, res) => {
 
     // Update coordinator comment
     if (coordinatorComment) {
+      let coordinatorFound = false;
       task.approvalChain.forEach((entry) => {
-        if (entry.designation === 'co_ordinator') {
+        if (entry.designation === 'co_ordinator' && !coordinatorFound) {
           entry.comment = coordinatorComment;
+          coordinatorFound = true; // Stop after the first match
+        }
+      });
+    }
+
+    // Update employee status
+    if (employeeStatus) {
+      task.approvalChain.forEach((entry) => {
+        if (entry.designation === 'employee') {
+          entry.status = employeeStatus;
         }
       });
     }
@@ -73,6 +84,6 @@ exports.employeeSubmitTask = async (req, res) => {
 
     res.status(200).send({ message: 'Task updated successfully', task });
   } catch (err) {
-    res.status(500).send({ message: 'Failed to update task', err });
+    res.status(500).send({ message: 'Failed to update task', error: err.message });
   }
 };
