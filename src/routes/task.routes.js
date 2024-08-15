@@ -3,7 +3,7 @@ const { addTask, getTasks, getTask } = require('../controllers/tasks/task.contro
 const { uploadFileToSamba } = require('../controllers/tasks/uploadFileToSamba.controller');
 const { fileUpload } = require('../middlewares/fileUpload');
 const { employeeAcceptTask, employeeSubmitTask } = require('../controllers/tasks/employeeTask.controller');
-const { ceoAcceptTask } = require('../controllers/tasks/ceoTaskController');
+const { ceoAcceptTask, ceoRejectTask } = require('../controllers/tasks/ceoTaskController');
 
 const router = express.Router();
 
@@ -18,6 +18,7 @@ router.post('/upload', fileUpload?.single('file'), uploadFileToSamba);
 
 // ceo related
 router.put("/ceo-accept-task/:id", ceoAcceptTask)
+router.put("/ceo-reject-task/:id", ceoRejectTask)
 
 
 

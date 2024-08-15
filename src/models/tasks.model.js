@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema(
   {
@@ -8,7 +8,7 @@ const taskSchema = new mongoose.Schema(
     department: { type: String, required: true },
     description: { type: String, required: true },
     taskStartDate: { type: String, required: true },
-    file_types:[],
+    file_types: [],
     taskDeadline: { type: String, required: true },
     status: { type: String, required: true },
     taskTimer: { type: String },
@@ -33,7 +33,7 @@ const taskSchema = new mongoose.Schema(
         name: { type: String },
         status: { type: String },
         date: { type: Date, default: null },
-        comment: { type: String, default: '' },
+        comment: { type: String, default: "" },
       },
     ],
     submitInfo: [
@@ -44,14 +44,23 @@ const taskSchema = new mongoose.Schema(
         uploadDate: { type: String },
       },
     ],
+    rejectInfo: [
+      {
+        designation: { type: String },
+        userId: { type: Number },
+        rejectNote: { type: String },
+        rejectDate: { type: String },
+      },
+    ],
   },
   { timestamps: true }
 );
 
 // Default empty array for approvalChain and submitInfo
-taskSchema.path('approvalChain').default([]);
-taskSchema.path('submitInfo').default([]);
+taskSchema.path("approvalChain").default([]);
+taskSchema.path("submitInfo").default([]);
+taskSchema.path("rejectInfo").default([]);
 
-const TaskModel = mongoose.model('Tasks', taskSchema);
+const TaskModel = mongoose.model("Tasks", taskSchema);
 
 module.exports = TaskModel;
