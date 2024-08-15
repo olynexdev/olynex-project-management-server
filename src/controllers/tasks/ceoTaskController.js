@@ -1,5 +1,6 @@
 const TaskModel = require("../../models/tasks.model");
 
+// ceo accept task
 exports.ceoAcceptTask = async(req, res)=>{
     try {
         const { id } = req.params; // Assuming taskId is passed in URL params
@@ -51,4 +52,68 @@ exports.ceoAcceptTask = async(req, res)=>{
       } catch (err) {
         res.status(500).send({ message: 'Failed to submit task', err });
       }
+}
+
+
+// ceo reject task
+exports.ceoRejectTask = async(req, res)=>{
+  try {
+      const { id } = req.params; // Assuming taskId is passed in URL params
+      const { rejectInfoUpdate, coordinatorComment, employeeComment, ceoComment, employeeStatus, ceoStatus } = req.body;
+  
+      // Find the task by taskId
+      const task = await TaskModel.findById(id);
+  
+      if (!task) {
+        return res.status(404).send({ message: 'Task not found' });
+      }
+  
+      // Update approvalChain
+      if (rejectInfoUpdate) {
+        task.rejectInfo.push(rejectInfoUpdate);
+      }
+  
+      // Update coordinator comment
+      if (coordinatorComment) {
+        task.approvalChain.forEach((entry) => {
+          if (entry.designation === 'co_ordinator') {
+            entry.comment = coordinatorComment;
+          }
+        });
+      }
+      // Update employee comment
+      if (employeeComment) {
+        task.approvalChain.forEach((entry) => {
+          if (entry.designation === 'employee') {
+            entry.comment = employeeComment;
+            entry.status = employeeStatus;
+          }
+        });
+      }
+      // Update ceo comment
+      if (ceoComment) {
+        task.approvalChain.forEach((entry) => {
+          if (entry.designation === 'ceo') {
+            entry.comment = ceoComment;
+            entry.status = ceoStatus
+          }
+        });
+      }
+
+      //update employee status
+      if (employeeStatus) {
+        task.approvalChain.forEach((entry) => {
+          if (entry.designation === 'employee') {
+            entry.status = employeeStatus;
+          }
+        });
+      }
+
+      // Save the updated task
+      await task.save();
+  
+      res.status(200).send({ message: 'Task accept success!', task });
+    } catch (err) {
+      res.status(500).send({ message: 'Failed to submit task', err });
+    }
 }
