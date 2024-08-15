@@ -9,6 +9,8 @@ exports.addTask = async (req, res) => {
     res.status(500).send({ message: 'Task Adding Error!', error });
   }
 };
+
+
 exports.getTasks = async (req, res) => {
   try {
     const { page = 1, limit = 10, userId } = req.query;
@@ -18,12 +20,13 @@ exports.getTasks = async (req, res) => {
     const numericUserId = userId ? parseInt(userId, 10) : undefined;
 
     // Build the filter query
-    const filter = {
+    const filter = numericUserId ? {
       $or: [
         { 'approvalChain': { $elemMatch: { userId: numericUserId, designation: 'ceo' } } },
         { 'taskReceiver.userId': numericUserId },
       ],
-    };
+    } : {};
+
     // Get the total count of tasks based on the filter
     const totalTasks = await TasksModel.countDocuments(filter);
 
@@ -42,6 +45,7 @@ exports.getTasks = async (req, res) => {
     res.status(500).send({ message: 'Failed to retrieve tasks', err });
   }
 };
+
 
 
 
