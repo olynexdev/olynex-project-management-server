@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const notificationSchema = new mongoose.Schema(
   {
     taskId: { type: String, required: true },
-    taskReceiverId: { type: Number, required: true },
-    taskSenderId: { type: Number, required: true },
-    taskSenderProfile: { type: String, require: true },
+    receiverId: { type: Number, required: true },
+    senderId: { type: Number, required: true },
+    senderProfile: { type: String, require: true },
     text: { type: String, required: true },
     isRead: { type: Boolean, required: true },
   },

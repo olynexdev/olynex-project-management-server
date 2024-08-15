@@ -16,7 +16,7 @@ exports.getNotification = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const result = await NotificationModel.find({ taskReceiverId: id })
+    const result = await NotificationModel.find({ receiverId: id })
       .sort({ createdAt: -1 }) // Sort by newest first
       .exec();
     res.status(201).send(result);
@@ -51,7 +51,7 @@ exports.deleteNotification = async (req, res) => {
   }
 
   if (operation === 'allDelete') {
-    const result = await NotificationModel.deleteMany({ taskReceiverId: id }); // Delete all for user
+    const result = await NotificationModel.deleteMany({ receiverId: id }); // Delete all for user
     return res.status(201).send(result);
   }
 };

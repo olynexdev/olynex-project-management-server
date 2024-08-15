@@ -24,8 +24,8 @@ io.on('connection', socket => {
   // Listen for notification events
   socket.on('sendNotification', data => {
     console.log('Notification data:', data);
-    // Emit the notification to the specific user by taskReceiverId
-    io.to(data.taskReceiverId).emit('receiveNotification', data);
+    // Emit the notification to the specific user by receiverId
+    io.to(data.receiverId).emit('receiveNotification', data);
   });
 
   socket.on('disconnect', () => {
