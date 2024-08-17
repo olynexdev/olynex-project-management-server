@@ -4,6 +4,7 @@ const { uploadFileToSamba } = require('../controllers/tasks/uploadFileToSamba.co
 const { fileUpload } = require('../middlewares/fileUpload');
 const { employeeAcceptTask, employeeSubmitTask } = require('../controllers/tasks/employeeTask.controller');
 const { ceoAcceptTask, ceoRejectTask } = require('../controllers/tasks/ceoTaskController');
+const { projectManagerAcceptTask, projectManagerRejected } = require('../controllers/tasks/projectManagerTaskController');
 
 const router = express.Router();
 
@@ -20,7 +21,8 @@ router.post('/upload', fileUpload?.single('file'), uploadFileToSamba);
 router.put("/ceo-accept-task/:id", ceoAcceptTask)
 router.put("/ceo-reject-task/:id", ceoRejectTask)
 
-
-
+// project manager related
+router.put("/project-manager-accept-task/:id", projectManagerAcceptTask)
+router.put("/project-manager-rejected-task/:id", projectManagerRejected)
 
 module.exports = router;
