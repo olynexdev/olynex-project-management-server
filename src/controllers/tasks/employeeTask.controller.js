@@ -51,6 +51,8 @@ exports.employeeSubmitTask = async (req, res) => {
       submitInfo,
       employeeStatus,
       ceoStatus,
+      projectManagerStatus,
+      status
     } = req.body;
 
     // Find the task by taskId
@@ -72,6 +74,10 @@ exports.employeeSubmitTask = async (req, res) => {
       }
     }
 
+    if(status){
+      task.status = status
+    }
+
     // Update coordinator comment
     if (coordinatorComment) {
       task.approvalChain.forEach((entry) => {
@@ -86,6 +92,14 @@ exports.employeeSubmitTask = async (req, res) => {
       task.approvalChain.forEach((entry) => {
         if (entry.designation === "ceo") {
           entry.status = ceoStatus;
+        }
+      });
+    }
+    // Update project manager status
+    if (projectManagerStatus) {
+      task.approvalChain.forEach((entry) => {
+        if (entry.designation === "project_manager") {
+          entry.status = projectManagerStatus;
         }
       });
     }

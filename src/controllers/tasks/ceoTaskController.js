@@ -5,7 +5,6 @@ exports.ceoAcceptTask = async (req, res) => {
     const { id } = req.params; // Assuming taskId is passed in URL params
     const { 
       approvalChainUpdate, 
-      coordinatorComment, 
       employeeComment, 
       ceoComment, 
       employeeStatus, 
@@ -32,15 +31,6 @@ exports.ceoAcceptTask = async (req, res) => {
     // Update status
     if (status) {
       task.status = status; // Fixed this line to update the status
-    }
-
-    // Update coordinator comment
-    if (coordinatorComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === 'co_ordinator') {
-          entry.comment = coordinatorComment;
-        }
-      });
     }
 
     // Update employee comment
@@ -78,7 +68,7 @@ exports.ceoAcceptTask = async (req, res) => {
 exports.ceoRejectTask = async(req, res)=>{
   try {
       const { id } = req.params; // Assuming taskId is passed in URL params
-      const { rejectInfoUpdate, employeeComment, ceoComment, employeeStatus, ceoStatus } = req.body;
+      const { rejectInfoUpdate, employeeComment, ceoComment, employeeStatus, ceoStatus, status } = req.body;
   
       // Find the task by taskId
       const task = await TaskModel.findById(id);
@@ -90,6 +80,10 @@ exports.ceoRejectTask = async(req, res)=>{
       // Update approvalChain
       if (rejectInfoUpdate) {
         task.rejectInfo.push(rejectInfoUpdate);
+      }
+
+      if(status){
+        task.status = status
       }
   
       // Update employee comment
@@ -107,15 +101,6 @@ exports.ceoRejectTask = async(req, res)=>{
           if (entry.designation === 'ceo') {
             entry.comment = ceoComment;
             entry.status = ceoStatus
-          }
-        });
-      }
-
-      //update employee status
-      if (employeeStatus) {
-        task.approvalChain.forEach((entry) => {
-          if (entry.designation === 'employee') {
-            entry.status = employeeStatus;
           }
         });
       }
