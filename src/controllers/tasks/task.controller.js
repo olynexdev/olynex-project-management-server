@@ -22,7 +22,7 @@ exports.getTasks = async (req, res) => {
     // Build the filter query
     const filter = numericUserId ? {
       $or: [
-        { 'approvalChain': { $elemMatch: { userId: numericUserId, designation: 'ceo' } } },
+        { 'approvalChain': { $elemMatch: { userId: numericUserId } } },
         { 'taskReceiver.userId': numericUserId },
       ],
     } : {};
