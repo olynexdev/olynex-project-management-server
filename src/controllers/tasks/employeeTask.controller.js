@@ -62,6 +62,7 @@ exports.employeeSubmitTask = async (req, res) => {
       return res.status(404).send({ message: "Task not found" });
     }
 
+    
     // Update approvalChain if necessary
     if (approvalChainUpdate) {
       const ceoEntryExists = task.approvalChain.some(
@@ -74,7 +75,7 @@ exports.employeeSubmitTask = async (req, res) => {
       }
     }
 
-    if(status){
+    if(task?.status !== "rejected_pm"){
       task.status = status
     }
 
