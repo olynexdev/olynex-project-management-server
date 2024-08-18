@@ -49,6 +49,7 @@ const taskSchema = new mongoose.Schema(
         designation: { type: String },
         userId: { type: Number },
         rejectNote: { type: String },
+        rejectReceiver: { type: Number },
         rejectDate: { type: String },
       },
     ],
