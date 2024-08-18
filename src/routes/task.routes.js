@@ -15,6 +15,7 @@ const {
 const {
   ceoAcceptTask,
   ceoRejectTask,
+  ceoRejectMockup,
 } = require('../controllers/tasks/ceoTaskController');
 const {
   projectManagerAcceptTask,
@@ -38,10 +39,13 @@ router.post('/upload', fileUpload?.single('file'), uploadFileToSamba);
 // ceo related
 router.put('/ceo-accept-task/:id', ceoAcceptTask);
 router.put('/ceo-reject-task/:id', ceoRejectTask);
+router.put('/ceo-reject-mockup/:id', ceoRejectMockup);
 
 // project manager related
 router.put('/project-manager-accept-task/:id', projectManagerAcceptTask);
 router.put('/project-manager-rejected-task/:id', projectManagerRejected);
+
+// mockup related
 router.put('/mockup-confirm-task/:id', mockupConfirmTask);
 
 module.exports = router;
