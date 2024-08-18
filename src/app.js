@@ -34,8 +34,8 @@ app.use('/api/v1/', fileTypeRoutes); // file type routes
 app.use('/api/v1/', categoryRoutes); // ategory routes
 app.use('/api/v1/', productsRoutes); // products routes
 app.use('/api/v1/', userRoutes); // user all routers
-app.use('/api/v1', taskRoutes); // all task routes
-app.use('/api/v1', notificationRoutes); //all notification routes
+app.use('/api/v1/', taskRoutes); // all task routes
+app.use('/api/v1/', notificationRoutes); //all notification routes
 
 // Error handling middleware
 const errorHandler = require('./middlewares/errorHandler');
