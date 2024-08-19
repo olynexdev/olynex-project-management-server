@@ -51,9 +51,9 @@ router.put('/project-manager-rejected-task/:id', projectManagerRejected);
 router.put('/mockup-confirm-task/:id', mockupConfirmTask);
 
 // seo related
-router.put('/upload-member-uploaded-task/:id', deliveryTeamUploadTask);
+router.put('/seo-accept-task/:id', seoAcceptTask);
 
 // delivery team related
-router.put("")
+router.put("/delivery-member-uploaded-task/:id", deliveryTeamUploadTask)
 
 module.exports = router;
