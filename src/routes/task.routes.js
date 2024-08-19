@@ -16,14 +16,16 @@ const {
   ceoAcceptTask,
   ceoRejectTask,
   ceoRejectMockup,
-} = require('../controllers/tasks/ceoTaskController');
+} = require('../controllers/tasks/ceoTask.controller');
 const {
   projectManagerAcceptTask,
   projectManagerRejected,
-} = require('../controllers/tasks/projectManagerTaskController');
+} = require('../controllers/tasks/projectManagerTask.controller');
 const {
   mockupConfirmTask,
-} = require('../controllers/tasks/mockupTaskController');
+} = require('../controllers/tasks/mockupTask.controller');
+const { seoAcceptTask } = require('../controllers/tasks/SeoTask.controller');
+const { deliveryTeamUploadTask } = require('../controllers/tasks/deliveryTeamTask.controller');
 
 const router = express.Router();
 
@@ -47,5 +49,11 @@ router.put('/project-manager-rejected-task/:id', projectManagerRejected);
 
 // mockup related
 router.put('/mockup-confirm-task/:id', mockupConfirmTask);
+
+// seo related
+router.put('/upload-member-uploaded-task/:id', deliveryTeamUploadTask);
+
+// delivery team related
+router.put("")
 
 module.exports = router;
