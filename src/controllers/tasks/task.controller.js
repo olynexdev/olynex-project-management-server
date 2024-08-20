@@ -46,6 +46,25 @@ exports.getTasks = async (req, res) => {
   }
 };
 
+// get employee running task
+
+exports.getEmployeeRunningTask = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Fetch tasks with 'progress' status for the given userId
+    const tasks = await TasksModel.find({ 
+      userId: userId, 
+      status: 'progress' 
+    });
+
+    // Return the found tasks
+    res.status(200).json({ success: true, tasks });
+  } catch (error) {
+    console.error("Error fetching employee's running tasks:", error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
 
 
 

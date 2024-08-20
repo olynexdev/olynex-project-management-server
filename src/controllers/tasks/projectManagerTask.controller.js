@@ -92,9 +92,15 @@ exports.projectManagerRejected = async (req, res) => {
       return res.status(404).send({ message: "Task not found" });
     }
 
-    // Update approvalChain
+    // update rejected info
     if (rejectInfoUpdate) {
-      task.rejectInfo.push(rejectInfoUpdate);
+      const existingRejectInfo = task.rejectInfo.find(
+        (info) => info.designation === rejectInfoUpdate.designation
+      );
+
+      if (!existingRejectInfo) {
+        task.rejectInfo.push(rejectInfoUpdate);
+      }
     }
 
     // Update status

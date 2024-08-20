@@ -3,6 +3,7 @@ const {
   addTask,
   getTasks,
   getTask,
+  getEmployeeRunningTask,
 } = require('../controllers/tasks/task.controller');
 const {
   uploadFileToSamba,
@@ -32,6 +33,7 @@ const router = express.Router();
 router.post('/post-task', addTask); // add new task
 router.get('/get-tasks', getTasks); // get all task
 router.get('/get-task/:id', getTask); // get an task
+router.get('/get-task/:userId', getEmployeeRunningTask); // get employee running task
 
 // employee related
 router.put('/employee-accept-task/:id', employeeAcceptTask);
@@ -51,9 +53,9 @@ router.put('/project-manager-rejected-task/:id', projectManagerRejected);
 router.put('/mockup-confirm-task/:id', mockupConfirmTask);
 
 // seo related
-router.put('/upload-member-uploaded-task/:id', deliveryTeamUploadTask);
+router.put('/seo-accept-task/:id', seoAcceptTask);
 
 // delivery team related
-router.put("")
+router.put("/delivery-member-uploaded-task/:id", deliveryTeamUploadTask)
 
 module.exports = router;
