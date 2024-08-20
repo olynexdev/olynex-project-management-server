@@ -9,6 +9,7 @@ const {
   getUsers,
   getUserwithEmail,
   getUserWithRole,
+  getUserbyUserId,
 } = require("../controllers/users/getUser.controller");
 
 const router = express.Router();
@@ -21,5 +22,6 @@ router.delete("/delete-user/:id", deleteUser); // delete a User
 router.get("/get-user", getUserwithEmail);
 router.get("/get-user-role/:email", getUserWithRole);
 router.get("/get-user/:id", getUserById);
+router.get('/get-user-by-user-id/:userId', getUserbyUserId)
 
 module.exports = router;
