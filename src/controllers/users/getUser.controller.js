@@ -19,6 +19,17 @@ exports.getUsers = async (req, res) => {
   }
 };
 
+// get single user data
+exports.getUserbyUserId = async (req, res) => {
+  const userId = req.params?.userId;
+try {
+  const result = await UserModel.findOne({userId});
+  res.status(201).send(result);
+} catch (err) {
+  res.status(500).send({ message: "User get Error!", err });
+}
+};
+
 // get single user with email
 exports.getUserwithEmail = async (req, res) => {
   const email = req.query?.email;
