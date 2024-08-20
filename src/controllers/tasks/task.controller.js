@@ -46,6 +46,29 @@ exports.getTasks = async (req, res) => {
   }
 };
 
+// get employee running task
+exports.getEmployeeRunningTask = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Fetch the latest task where the taskReceiver userId matches the given userId and the status is 'progress'
+    const task = await TasksModel.findOne({
+      'taskReceiver.userId': userId, 
+      status: { $in: ['progress', 'review',] }
+    })
+    .sort({ taskStartDate: -1 }) // Sort by taskStartDate in descending order (latest first)
+    .exec(); // Execute the query
+
+    if (!task) {
+      return res.status(404).json({ success: false, message: 'No running task found for this employee' });
+    }
+
+    res.status(200).json({ success: true, task });
+  } catch (error) {
+    console.error("Error fetching employee's running task:", error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
 
 
 

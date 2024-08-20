@@ -3,11 +3,8 @@ const {
   addTask,
   getTasks,
   getTask,
+  getEmployeeRunningTask,
 } = require('../controllers/tasks/task.controller');
-const {
-  uploadFileToSamba,
-} = require('../controllers/tasks/uploadFileToSamba.controller');
-const { fileUpload } = require('../middlewares/fileUpload');
 const {
   employeeAcceptTask,
   employeeSubmitTask,
@@ -16,25 +13,27 @@ const {
   ceoAcceptTask,
   ceoRejectTask,
   ceoRejectMockup,
-} = require('../controllers/tasks/ceoTaskController');
+} = require('../controllers/tasks/ceoTask.controller');
 const {
   projectManagerAcceptTask,
   projectManagerRejected,
-} = require('../controllers/tasks/projectManagerTaskController');
+} = require('../controllers/tasks/projectManagerTask.controller');
 const {
   mockupConfirmTask,
-} = require('../controllers/tasks/mockupTaskController');
+} = require('../controllers/tasks/mockupTask.controller');
+const { seoAcceptTask } = require('../controllers/tasks/SeoTask.controller');
+const { deliveryTeamUploadTask } = require('../controllers/tasks/deliveryTeamTask.controller');
 
 const router = express.Router();
 
 router.post('/post-task', addTask); // add new task
 router.get('/get-tasks', getTasks); // get all task
 router.get('/get-task/:id', getTask); // get an task
+router.get('/get-running-task/:userId', getEmployeeRunningTask); // get employee running task
 
 // employee related
 router.put('/employee-accept-task/:id', employeeAcceptTask);
 router.put('/employee-submit-task/:id', employeeSubmitTask);
-router.post('/upload', fileUpload?.single('file'), uploadFileToSamba);
 
 // ceo related
 router.put('/ceo-accept-task/:id', ceoAcceptTask);
@@ -47,5 +46,11 @@ router.put('/project-manager-rejected-task/:id', projectManagerRejected);
 
 // mockup related
 router.put('/mockup-confirm-task/:id', mockupConfirmTask);
+
+// seo related
+router.put('/seo-accept-task/:id', seoAcceptTask);
+
+// delivery team related
+router.put("/delivery-member-uploaded-task/:id", deliveryTeamUploadTask)
 
 module.exports = router;
