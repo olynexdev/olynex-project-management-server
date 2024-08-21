@@ -26,6 +26,7 @@ exports.deleteUser = async (req, res) => {
     res.status(500).send({ message: "Error deleting User", error: err });
   }
 };
+// get a User by id
 exports.getUserById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -36,15 +37,15 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// // Update a specific designation by ID
-// exports.updateDesignation = async (req, res) => {
-//     const designationId = req.params.id;
-//     const updateData = req.body;
-//     try {
-//         // Use Mongoose updateOne to update the designation
-//         const result = await DesignationModel.updateOne({ _id: designationId }, updateData);
-//          res.status(200).send(result);
-//     } catch (err) {
-//         res.status(500).send({ message: "Error updating designation", error: err });
-//     }
-// };
+// Update a user by ID
+exports.updateUser = async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+  try {
+    // Use Mongoose updateOne to update the designation
+    const result = await UserModel.updateOne({ _id: id }, { $set: updateData });
+    res.status(201).send(result);
+  } catch (err) {
+    res.status(500).send({ message: "Error updating designation", error: err });
+  }
+};
