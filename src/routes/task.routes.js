@@ -3,7 +3,7 @@ const {
   addTask,
   getTasks,
   getTask,
-  getEmployeeRunningTask,
+  getRunningTask,
 } = require('../controllers/tasks/task.controller');
 const {
   employeeAcceptTask,
@@ -29,7 +29,7 @@ const router = express.Router();
 router.post('/post-task', addTask); // add new task
 router.get('/get-tasks', getTasks); // get all task
 router.get('/get-task/:id', getTask); // get an task
-router.get('/get-running-task/:userId', getEmployeeRunningTask); // get employee running task
+router.get('/get-running-task/:userId', getRunningTask); // get running task
 
 // employee related
 router.put('/employee-accept-task/:id', employeeAcceptTask);
