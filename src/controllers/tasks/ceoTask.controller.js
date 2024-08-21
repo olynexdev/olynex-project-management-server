@@ -1,4 +1,4 @@
-const TaskModel = require("../../models/tasks.model");
+const TaskModel = require('../../models/tasks.model');
 
 exports.ceoAcceptTask = async (req, res) => {
   try {
@@ -16,7 +16,7 @@ exports.ceoAcceptTask = async (req, res) => {
     const task = await TaskModel.findById(id);
 
     if (!task) {
-      return res.status(404).send({ message: "Task not found" });
+      return res.status(404).send({ message: 'Task not found' });
     }
 
     // Update approvalChain
@@ -35,8 +35,8 @@ exports.ceoAcceptTask = async (req, res) => {
 
     // Update employee comment
     if (employeeComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "employee") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'employee') {
           entry.comment = employeeComment;
           entry.status = employeeStatus;
         }
@@ -45,8 +45,8 @@ exports.ceoAcceptTask = async (req, res) => {
 
     // Update CEO comment
     if (ceoComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "ceo") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'ceo') {
           entry.comment = ceoComment;
           entry.status = ceoStatus;
         }
@@ -56,11 +56,11 @@ exports.ceoAcceptTask = async (req, res) => {
     // Save the updated task
     await task.save();
 
-    res.status(200).send({ message: "Task accept success!", task });
+    res.status(200).send({ message: 'Task accept success!', task });
   } catch (err) {
     res
       .status(500)
-      .send({ message: "Failed to submit task", error: err.message });
+      .send({ message: 'Failed to submit task', error: err.message });
   }
 };
 
@@ -73,14 +73,14 @@ exports.ceoAcceptTaskSendToSEO = async (req, res) => {
       ceoComment,
       ceoStatus,
       mockupComment,
-      mockupStatus
+      mockupStatus,
     } = req.body;
 
     // Find the task by taskId
     const task = await TaskModel.findById(id);
 
     if (!task) {
-      return res.status(404).send({ message: "Task not found" });
+      return res.status(404).send({ message: 'Task not found' });
     }
 
     // Update approvalChain
@@ -94,8 +94,8 @@ exports.ceoAcceptTaskSendToSEO = async (req, res) => {
 
     // Update ceo comment
     if (mockupComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "mockup") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'mockup') {
           entry.comment = mockupComment;
           entry.status = mockupStatus;
         }
@@ -104,8 +104,8 @@ exports.ceoAcceptTaskSendToSEO = async (req, res) => {
 
     // Update CEO comment
     if (ceoComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "ceo") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'ceo') {
           entry.comment = ceoComment;
           entry.status = ceoStatus;
         }
@@ -115,11 +115,11 @@ exports.ceoAcceptTaskSendToSEO = async (req, res) => {
     // Save the updated task
     await task.save();
 
-    res.status(200).send({ message: "Task accept success!", task });
+    res.status(200).send({ message: 'Task accept success!', task });
   } catch (err) {
     res
       .status(500)
-      .send({ message: "Failed to submit task", error: err.message });
+      .send({ message: 'Failed to submit task', error: err.message });
   }
 };
 
@@ -140,14 +140,18 @@ exports.ceoRejectTask = async (req, res) => {
     const task = await TaskModel.findById(id);
 
     if (!task) {
-      return res.status(404).send({ message: "Task not found" });
+      return res.status(404).send({ message: 'Task not found' });
     }
 
     // Update approvalChain
     if (rejectInfoUpdate) {
       const existingRejectInfo = task.rejectInfo.find(
-        (info) => info.designation === rejectInfoUpdate.designation
+        info => info.designation === rejectInfoUpdate.designation
       );
+
+      if (existingRejectInfo) {
+        existingRejectInfo.rejectNote = rejectInfoUpdate.rejectNote;
+      }
 
       if (!existingRejectInfo) {
         task.rejectInfo.push(rejectInfoUpdate);
@@ -160,8 +164,8 @@ exports.ceoRejectTask = async (req, res) => {
 
     // Update employee comment
     if (employeeComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "employee") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'employee') {
           entry.comment = employeeComment;
           entry.status = employeeStatus;
         }
@@ -169,8 +173,8 @@ exports.ceoRejectTask = async (req, res) => {
     }
     // Update ceo comment
     if (ceoComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "ceo") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'ceo') {
           entry.comment = ceoComment;
           entry.status = ceoStatus;
         }
@@ -180,9 +184,9 @@ exports.ceoRejectTask = async (req, res) => {
     // Save the updated task
     await task.save();
 
-    res.status(200).send({ message: "Task accept success!", task });
+    res.status(200).send({ message: 'Task accept success!', task });
   } catch (err) {
-    res.status(500).send({ message: "Failed to submit task", err });
+    res.status(500).send({ message: 'Failed to submit task', err });
   }
 };
 // ceo reject mockup
@@ -201,14 +205,18 @@ exports.ceoRejectMockup = async (req, res) => {
     const task = await TaskModel.findById(id);
 
     if (!task) {
-      return res.status(404).send({ message: "Task not found" });
+      return res.status(404).send({ message: 'Task not found' });
     }
 
     // Update approvalChain
     if (rejectInfoUpdate) {
       const existingRejectInfo = task.rejectInfo.find(
-        (info) => info.designation === rejectInfoUpdate.designation
+        info => info.rejectReceiver === rejectInfoUpdate.rejectReceiver
       );
+
+      if (existingRejectInfo) {
+        existingRejectInfo.rejectNote = rejectInfoUpdate.rejectNote;
+      }
 
       if (!existingRejectInfo) {
         task.rejectInfo.push(rejectInfoUpdate);
@@ -217,8 +225,8 @@ exports.ceoRejectMockup = async (req, res) => {
 
     // Update mockup
     if (mockupComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "mockup") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'mockup') {
           entry.comment = mockupComment;
           entry.status = mockupStatus;
         }
@@ -226,8 +234,8 @@ exports.ceoRejectMockup = async (req, res) => {
     }
     // Update ceo comment
     if (ceoComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "ceo") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'ceo') {
           entry.comment = ceoComment;
           entry.status = ceoStatus;
         }
@@ -237,8 +245,8 @@ exports.ceoRejectMockup = async (req, res) => {
     // Save the updated task
     await task.save();
 
-    res.status(200).send({ message: "Task accept success!", task });
+    res.status(200).send({ message: 'Task accept success!', task });
   } catch (err) {
-    res.status(500).send({ message: "Failed to submit task", err });
+    res.status(500).send({ message: 'Failed to submit task', err });
   }
 };
