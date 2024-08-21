@@ -149,6 +149,10 @@ exports.ceoRejectTask = async (req, res) => {
         info => info.designation === rejectInfoUpdate.designation
       );
 
+      if (existingRejectInfo) {
+        existingRejectInfo.rejectNote = rejectInfoUpdate.rejectNote;
+      }
+
       if (!existingRejectInfo) {
         task.rejectInfo.push(rejectInfoUpdate);
       }

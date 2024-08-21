@@ -1,4 +1,4 @@
-const TaskModel = require("../../models/tasks.model");
+const TaskModel = require('../../models/tasks.model');
 
 // accept the task in project manager
 exports.projectManagerAcceptTask = async (req, res) => {
@@ -17,7 +17,7 @@ exports.projectManagerAcceptTask = async (req, res) => {
     const task = await TaskModel.findById(id);
 
     if (!task) {
-      return res.status(404).send({ message: "Task not found" });
+      return res.status(404).send({ message: 'Task not found' });
     }
 
     // Update approvalChain
@@ -36,8 +36,8 @@ exports.projectManagerAcceptTask = async (req, res) => {
 
     // Update employee comment
     if (employeeComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "employee") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'employee') {
           entry.comment = employeeComment;
           entry.status = employeeStatus;
         }
@@ -46,16 +46,16 @@ exports.projectManagerAcceptTask = async (req, res) => {
 
     // Update CEO comment
     if (ceoComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "ceo") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'ceo') {
           entry.comment = ceoComment;
         }
       });
     }
     // Update project manager status
     if (projectManagerStatus) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "project_manager") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'project_manager') {
           entry.status = projectManagerStatus;
         }
       });
@@ -64,11 +64,11 @@ exports.projectManagerAcceptTask = async (req, res) => {
     // Save the updated task
     await task.save();
 
-    res.status(200).send({ message: "Task accept success!", task });
+    res.status(200).send({ message: 'Task accept success!', task });
   } catch (err) {
     res
       .status(500)
-      .send({ message: "Failed to submit task", error: err.message });
+      .send({ message: 'Failed to submit task', error: err.message });
   }
 };
 
@@ -89,14 +89,18 @@ exports.projectManagerRejected = async (req, res) => {
     const task = await TaskModel.findById(id);
 
     if (!task) {
-      return res.status(404).send({ message: "Task not found" });
+      return res.status(404).send({ message: 'Task not found' });
     }
 
     // update rejected info
     if (rejectInfoUpdate) {
       const existingRejectInfo = task.rejectInfo.find(
-        (info) => info.designation === rejectInfoUpdate.designation
+        info => info.designation === rejectInfoUpdate.designation
       );
+
+      if (existingRejectInfo) {
+        existingRejectInfo.rejectNote = rejectInfoUpdate.rejectNote;
+      }
 
       if (!existingRejectInfo) {
         task.rejectInfo.push(rejectInfoUpdate);
@@ -110,8 +114,8 @@ exports.projectManagerRejected = async (req, res) => {
 
     // Update employee comment
     if (employeeComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "employee") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'employee') {
           entry.comment = employeeComment;
           entry.status = employeeStatus;
         }
@@ -119,8 +123,8 @@ exports.projectManagerRejected = async (req, res) => {
     }
     // Update ceo comment
     if (projectManagerStatus) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "project_manager") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'project_manager') {
           entry.comment = projectManagerComment;
           entry.status = projectManagerStatus;
         }
@@ -130,8 +134,8 @@ exports.projectManagerRejected = async (req, res) => {
     // Save the updated task
     await task.save();
 
-    res.status(200).send({ message: "Task accept success!", task });
+    res.status(200).send({ message: 'Task accept success!', task });
   } catch (err) {
-    res.status(500).send({ message: "Failed to submit task", err });
+    res.status(500).send({ message: 'Failed to submit task', err });
   }
 };
