@@ -12,6 +12,7 @@ const productsRoutes = require("./routes/productListing.routes.js");
 const userRoutes = require("./routes/user.routes.js");
 const taskRoutes = require("./routes/task.routes.js");
 const notificationRoutes = require("./routes/notification.routes");
+const attendenceRoutes = require("./routes/attendence.routes.js")
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/v1/", userRoutes); // user all routers
 app.use("/api/v1/", taskRoutes); // all task routes
 app.use("/api/v1/", notificationRoutes); //all notification routes
 app.use("/api/v1/", marketPlaceRoutes);
+app.use("/api/v1", attendenceRoutes) // attendence routes
 
 // Error handling middleware
 const errorHandler = require("./middlewares/errorHandler");

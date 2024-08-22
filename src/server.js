@@ -1,6 +1,7 @@
 const http = require('http');
 const socketIO = require('socket.io');
 const app = require('./app');
+const initializeZKLib = require('./services/zklibInstance');
 
 const PORT = process.env.PORT || 5000;
 
@@ -35,6 +36,7 @@ io.on('connection', socket => {
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  initializeZKLib()
 });
 
 module.exports = { io };
