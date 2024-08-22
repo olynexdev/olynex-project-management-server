@@ -4,6 +4,7 @@ const {
   getNotification,
   updateReadNotification,
   deleteNotification,
+  getPagination,
 } = require('../controllers/notification/notification.controller');
 
 const router = express.Router();
