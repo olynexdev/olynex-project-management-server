@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const attendenceScema = new mongoose.Schema(
   {
@@ -16,5 +16,5 @@ const attendenceScema = new mongoose.Schema(
   }
 );
 
-const AddendenceModel = mongoose.model("Addentence", attendenceScema);
+const AddendenceModel = mongoose.model('Addentence', attendenceScema);
 module.exports = AddendenceModel;

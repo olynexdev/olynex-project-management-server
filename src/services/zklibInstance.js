@@ -1,5 +1,5 @@
-const ZKLib = require("node-zklib");
-const AttendanceModel = require("../models/attendence.model");
+const ZKLib = require('node-zklib');
+const AttendanceModel = require('../models/attendence.model');
 
 let lastSeenTimestamp = new Date(); // Initialize to current time to avoid processing old records
 
@@ -8,22 +8,23 @@ async function initializeZKLib() {
 
   try {
     await zkInstance.createSocket();
-    console.log("Connected to ZKTeco device");
+    console.log('Connected to ZKTeco device');
 
     setInterval(async () => {
       try {
         const logs = await zkInstance.getAttendances();
+        console.log(logs);
 
         if (logs && Array.isArray(logs.data)) {
           // Only process logs after the last seen timestamp
           const newLogs = logs.data.filter(
-            (log) => new Date(log.recordTime) > lastSeenTimestamp
+            log => new Date(log.recordTime) > lastSeenTimestamp
           );
 
           if (newLogs.length > 0) {
             // Update lastSeenTimestamp to the latest record time
             lastSeenTimestamp = new Date(
-              Math.max(...newLogs.map((log) => new Date(log.recordTime)))
+              Math.max(...newLogs.map(log => new Date(log.recordTime)))
             );
 
             // Insert new logs into the database
@@ -38,19 +39,19 @@ async function initializeZKLib() {
                   await AttendanceModel.create(log);
                 }
               } catch (err) {
-                console.error("Error processing log:", err);
+                console.error('Error processing log:', err);
               }
             }
           }
         } else {
-          console.error("Fetched logs data is not an array:", logs.data);
+          console.error('Fetched logs data is not an array:', logs.data);
         }
       } catch (err) {
-        console.error("Error fetching attendance:", err);
+        console.error('Error fetching attendance:', err);
       }
     }, 10000); // Poll every 10 seconds
   } catch (err) {
-    console.error("Error connecting to ZKTeco device:", err);
+    console.error('Error connecting to ZKTeco device:', err);
   }
 }
 
