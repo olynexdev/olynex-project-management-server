@@ -18,6 +18,9 @@ const attendenceScema = new mongoose.Schema(
     },
     OfficeWorking: {
       type: String
+    },
+    note:{
+      note: String
     }
   },
   {

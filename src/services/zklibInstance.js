@@ -58,6 +58,7 @@ async function initializeZKLib() {
                     : null,
                   OfficeWorking: "pending",
                   date: recordTime.format("YYYY-MM-DD"),
+                  note: ""
                 });
               } else {
                 // Update existing record
