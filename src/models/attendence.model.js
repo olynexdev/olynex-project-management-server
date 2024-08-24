@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const attendenceScema = new mongoose.Schema(
   {
@@ -10,11 +10,11 @@ const attendenceScema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    inGoing:{
-      type:  String
+    inGoing: {
+      type: String,
     },
     outGoing: {
-      type: String
+      type: String,
     },
     OfficeWorking: {
       type: String
@@ -28,5 +28,5 @@ const attendenceScema = new mongoose.Schema(
   }
 );
 
-const AddendenceModel = mongoose.model("Attendance", attendenceScema);
+const AddendenceModel = mongoose.model('Attendance', attendenceScema);
 module.exports = AddendenceModel;
