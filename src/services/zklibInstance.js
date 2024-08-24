@@ -27,7 +27,6 @@ async function initializeZKLib() {
               Math.max(...newLogs.map(log => new Date(log.recordTime)))
             );
 
-            // Insert new logs into the database
             for (const log of newLogs) {
               try {
                 // Check if the record already exists in the database
