@@ -1,5 +1,7 @@
 const express = require('express');
-const { getAllAttendances } = require('../controllers/addendence/attendence.controller');
+const {
+  getAllAttendances,
+} = require('../controllers/addendence/attendence.controller');
 const router = express.Router();
 
 // attendence related routes
