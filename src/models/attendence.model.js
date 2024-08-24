@@ -17,8 +17,11 @@ const attendenceScema = new mongoose.Schema(
       type: String,
     },
     OfficeWorking: {
-      type: String,
+      type: String
     },
+    note:{
+      note: String
+    }
   },
   {
     timestamps: true,

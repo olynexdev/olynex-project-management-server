@@ -56,8 +56,9 @@ async function initializeZKLib() {
                   outGoing: recordTime.isAfter(moment('15:00', 'HH:mm'))
                     ? log.recordTime
                     : null,
-                  OfficeWorking: 'pending',
-                  date: recordTime.format('YYYY-MM-DD'),
+                  OfficeWorking: "pending",
+                  date: recordTime.format("YYYY-MM-DD"),
+                  note: ""
                 });
               } else {
                 // Update existing record
