@@ -2,19 +2,28 @@ const mongoose = require("mongoose");
 
 const attendenceScema = new mongoose.Schema(
   {
-    deviceUserId: {
+    userId: {
       type: Number,
       required: true,
     },
-    recordTime: {
+    date: {
       type: String,
       required: true,
     },
+    inGoing:{
+      type:  String
+    },
+    outGoing: {
+      type: String
+    },
+    OfficeWorking: {
+      type: String
+    }
   },
   {
     timestamps: true,
   }
 );
 
-const AddendenceModel = mongoose.model("Addentence", attendenceScema);
+const AddendenceModel = mongoose.model("Attendance", attendenceScema);
 module.exports = AddendenceModel;

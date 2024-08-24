@@ -1,5 +1,6 @@
 const ZKLib = require("node-zklib");
 const AttendanceModel = require("../models/attendence.model");
+const moment = require("moment");
 
 let lastSeenTimestamp = new Date(); // Initialize to current time to avoid processing old records
 
@@ -26,19 +27,49 @@ async function initializeZKLib() {
               Math.max(...newLogs.map((log) => new Date(log.recordTime)))
             );
 
-            // Insert new logs into the database
             for (const log of newLogs) {
-              try {
-                // Check if the record already exists in the database
-                const existingRecord = await AttendanceModel.findOne({
-                  recordTime: log.recordTime,
-                  userSn: log.userSn,
+              const recordTime = moment(log.recordTime);
+
+              // Skip posting if time is between 1:30 PM and 3:00 PM
+              if (
+                recordTime.isBetween(
+                  moment("13:30", "HH:mm"),
+                  moment("15:00", "HH:mm")
+                )
+              ) {
+                console.log("Skipping time between 1:30 PM and 3:00 PM");
+                continue;
+              }
+
+              const existingRecord = await AttendanceModel.findOne({
+                userId: log.deviceUserId,
+                date: recordTime.format("YYYY-MM-DD"),
+              });
+
+              if (!existingRecord) {
+                // Create a new record if none exists
+                await AttendanceModel.create({
+                  userId: log.deviceUserId,
+                  inGoing: recordTime.isBefore(moment("13:30", "HH:mm"))
+                    ? log.recordTime
+                    : null,
+                  outGoing: recordTime.isAfter(moment("15:00", "HH:mm"))
+                    ? log.recordTime
+                    : null,
+                  OfficeWorking: "pending",
+                  date: recordTime.format("YYYY-MM-DD"),
                 });
-                if (!existingRecord) {
-                  await AttendanceModel.create(log);
+              } else {
+                // Update existing record
+                if (
+                  recordTime.isBefore(moment("13:30", "HH:mm")) &&
+                  !existingRecord.inGoing
+                ) {
+                  existingRecord.inGoing = log.recordTime;
+                } else if (recordTime.isAfter(moment("15:00", "HH:mm"))) {
+                  existingRecord.outGoing = log.recordTime;
                 }
-              } catch (err) {
-                console.error("Error processing log:", err);
+                await existingRecord.save();
               }
             }
           }
