@@ -1,4 +1,6 @@
 const AttendanceModel = require('../../models/attendence.model');
+const UserModel = require('../../models/users.model');
+const moment = require('moment');
 
 // Map of month names to their numerical values
 const monthMap = {
@@ -85,6 +87,7 @@ exports.deleteAllAttendance = async (req, res) => {
   }
 };
 
+// post attendance in in frontend
 exports.postAttendance = async (req, res) => {
   const attendance = req.body;
 
@@ -106,6 +109,48 @@ exports.postAttendance = async (req, res) => {
     res
       .status(500)
       .send({ message: 'Attendance post failed!', error: err.message });
+  }
+};
+
+exports.postAbsentAttendance = async (req, res) => {
+  try {
+    const users = await UserModel.find(); // Fetch all users from the database
+    const attendance = await AttendanceModel.find({
+      date: moment().format('YYYY-MM-DD'), // Filter attendance for the current day
+    });
+
+    // Loop through each user
+    for (const user of users) {
+      const userAttendance = attendance.find(
+        record => record.userId === user.userId
+      );
+
+      // Check if the user has no attendance record for the day or if outGoing is missing
+      if (!userAttendance || !userAttendance.outGoing) {
+        const currentTime = moment();
+
+        // If current time is after 6 PM and no record exists, mark the user as absent
+        if (
+          currentTime.isAfter(moment().set({ hour: 15, minute: 0, second: 0 }))
+        ) {
+          const newAttendance = new AttendanceModel({
+            userId: user.userId,
+            date: moment().format('YYYY-MM-DD'),
+            inGoing: null,
+            outGoing: null,
+            OfficeWorking: 'Absent',
+            note: '',
+          });
+          await newAttendance.save(); // Save the absent record to the database
+          console.log(`Marked user ${user.userId} as absent`);
+        }
+      }
+    }
+
+    res.status(200).json({ message: 'Absent attendance posted successfully' });
+  } catch (error) {
+    console.error('Error posting absent attendance:', error);
+    res.status(500).json({ message: 'Error posting absent attendance' });
   }
 };
 
