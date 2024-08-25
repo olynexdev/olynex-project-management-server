@@ -18,37 +18,107 @@ const monthMap = {
   December: 11,
 };
 
+// exports.getAllAttendances = async (req, res) => {
+//   const searchQuery = req.query.search;
+//   const monthQuery = req.query.month;
+//   const dateQuery = req.query.date; // date format is 2024-08-24T05:41:31.659Z
+//   const id = parseInt(searchQuery, 10);
+//   const page = parseInt(req.query.page, 10) || 1; // Current page, default is 1
+//   const limit = parseInt(req.query.limit, 10) || 10; // Number of items per page, default is 10
+//   const skip = (page - 1) * limit; // Number of items to skip
+
+//   try {
+//     let attendances;
+
+//     let startDate = null;
+//     let endDate = null;
+
+//     // filter with month
+//     if (monthQuery && monthMap[monthQuery] !== undefined) {
+//       console.log('object sfgasdfhdafghfg');
+//       const selectedMonth = monthMap[monthQuery];
+//       const currentYear = new Date().getFullYear();
+
+//       startDate = new Date(currentYear, selectedMonth, 1); // month first date
+//       endDate = new Date(currentYear, selectedMonth + 1, 1); // month end date
+//       attendances = await AttendanceModel.find({
+//         createdAt: {
+//           $gte: startDate,
+//           $lt: endDate,
+//         },
+//       });
+//       return res.json(attendances);
+//     }
+
+//     // query for for search or filter with date
+//     const query = {};
+
+//     // search query
+//     if (id) {
+//       query.userId = id;
+//     }
+
+//     // date query
+//     if (dateQuery) {
+//       // Convert dateQuery to a date object
+//       const selectedDate = new Date(dateQuery);
+//       if (isNaN(selectedDate)) {
+//         return res.status(400).send('Invalid date format.');
+//       }
+//       const startNewDate = new Date(selectedDate.setUTCHours(0, 0, 0, 0)); // Start of the selected day
+//       const endNewDate = new Date(selectedDate.setUTCHours(23, 59, 59, 999)); // End of the selected day
+//       query.createdAt = { $gte: startNewDate, $lt: endNewDate };
+//     }
+
+//     // Fetch the data from MongoDB
+//     attendances = await AttendanceModel.find(query);
+
+//     res.json(attendances);
+//   } catch (err) {
+//     console.error('Error fetching attendance data:', err);
+//     res.status(500).send('Internal Server Error');
+//   }
+// };
+
 exports.getAllAttendances = async (req, res) => {
   const searchQuery = req.query.search;
   const monthQuery = req.query.month;
   const dateQuery = req.query.date; // date format is 2024-08-24T05:41:31.659Z
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 10; // Number of records per page
+  const skip = (page - 1) * limit;
+
   const id = parseInt(searchQuery, 10);
 
   try {
-    let attendances;
+    let query = {};
 
-    let startDate = null;
-    let endDate = null;
-
-    // filter with month
+    // filter by month
     if (monthQuery && monthMap[monthQuery] !== undefined) {
-      console.log('object sfgasdfhdafghfg');
       const selectedMonth = monthMap[monthQuery];
       const currentYear = new Date().getFullYear();
 
-      startDate = new Date(currentYear, selectedMonth, 1); // month first date
-      endDate = new Date(currentYear, selectedMonth + 1, 1); // month end date
-      attendances = await AttendanceModel.find({
-        createdAt: {
-          $gte: startDate,
-          $lt: endDate,
-        },
-      });
-      return res.json(attendances);
-    }
+      const startDate = new Date(currentYear, selectedMonth, 1); // month start date
+      const endDate = new Date(currentYear, selectedMonth + 1, 1); // month end date
 
-    // query for for search or filter with date
-    const query = {};
+      query.createdAt = { $gte: startDate, $lt: endDate };
+
+      // Fetch the data from MongoDB with pagination for the month filter
+      const attendances = await AttendanceModel.find(query)
+        .skip(skip)
+        .limit(limit);
+
+      // Get total count for pagination
+      const totalRecords = await AttendanceModel.countDocuments(query);
+      const totalPages = Math.ceil(totalRecords / limit);
+
+      return res.json({
+        attendances,
+        currentPage: page,
+        totalPages,
+        totalRecords,
+      });
+    }
 
     // search query
     if (id) {
@@ -57,7 +127,6 @@ exports.getAllAttendances = async (req, res) => {
 
     // date query
     if (dateQuery) {
-      // Convert dateQuery to a date object
       const selectedDate = new Date(dateQuery);
       if (isNaN(selectedDate)) {
         return res.status(400).send('Invalid date format.');
@@ -67,10 +136,21 @@ exports.getAllAttendances = async (req, res) => {
       query.createdAt = { $gte: startNewDate, $lt: endNewDate };
     }
 
-    // Fetch the data from MongoDB
-    attendances = await AttendanceModel.find(query);
+    // Fetch the data from MongoDB with pagination for other filters
+    const attendances = await AttendanceModel.find(query)
+      .skip(skip)
+      .limit(limit);
 
-    res.json(attendances);
+    // Get total count for pagination
+    const totalRecords = await AttendanceModel.countDocuments(query);
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    res.json({
+      attendances,
+      currentPage: page,
+      totalPages,
+      totalRecords,
+    });
   } catch (err) {
     console.error('Error fetching attendance data:', err);
     res.status(500).send('Internal Server Error');
