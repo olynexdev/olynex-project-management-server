@@ -19,25 +19,23 @@ const monthMap = {
 exports.getAllAttendances = async (req, res) => {
   const searchQuery = req.query.search;
   const monthQuery = req.query.month;
-  const dateQuery = req.query.date; // my date format is 2024-08-24T05:41:31.659Z
+  const dateQuery = req.query.date; // date format is 2024-08-24T05:41:31.659Z
   const id = parseInt(searchQuery, 10);
-  console.log(dateQuery);
 
   try {
     let attendances;
 
-    // Check if monthQuery is provided and valid
     let startDate = null;
     let endDate = null;
-    console.log(startDate, endDate);
 
+    // filter with month
     if (monthQuery && monthMap[monthQuery] !== undefined) {
+      console.log('object sfgasdfhdafghfg');
       const selectedMonth = monthMap[monthQuery];
-      console.log(selectedMonth);
       const currentYear = new Date().getFullYear();
 
-      startDate = new Date(currentYear, selectedMonth, 1);
-      endDate = new Date(currentYear, selectedMonth + 1, 1);
+      startDate = new Date(currentYear, selectedMonth, 1); // month first date
+      endDate = new Date(currentYear, selectedMonth + 1, 1); // month end date
       attendances = await AttendanceModel.find({
         createdAt: {
           $gte: startDate,
@@ -47,18 +45,23 @@ exports.getAllAttendances = async (req, res) => {
       return res.json(attendances);
     }
 
-    // Build the query
+    // query for for search or filter with date
     const query = {};
 
+    // search query
     if (id) {
       query.userId = id;
     }
 
+    // date query
     if (dateQuery) {
       // Convert dateQuery to a date object
       const selectedDate = new Date(dateQuery);
+      if (isNaN(selectedDate)) {
+        return res.status(400).send('Invalid date format.');
+      }
       const startNewDate = new Date(selectedDate.setUTCHours(0, 0, 0, 0)); // Start of the selected day
-      const endNewDate = new Date(selectedDate.setUTCHours(23, 59, 59, 999)); // End of the selected da
+      const endNewDate = new Date(selectedDate.setUTCHours(23, 59, 59, 999)); // End of the selected day
       query.createdAt = { $gte: startNewDate, $lt: endNewDate };
     }
 
@@ -72,32 +75,65 @@ exports.getAllAttendances = async (req, res) => {
   }
 };
 
+// delete all attendances
+exports.deleteAllAttendance = async (req, res) => {
+  try {
+    const result = await AttendanceModel.deleteMany();
+    res.status(201).send(result);
+  } catch (err) {
+    res.status(500).send({ message: 'Failed to delete all attendance:', err });
+  }
+};
 
+exports.postAttendance = async (req, res) => {
+  const attendance = req.body;
 
-  // delete all attendances
-  exports.deleteAllAttendance = async(req, res)=>{
-    try{
-      const result = await AttendanceModel.deleteMany()
-      res.status(201).send(result)
-    }catch(err){
-      res.status(500).send({message: "Failed to delete all attendance:", err})
-    }
+  if (!attendance || Object.keys(attendance).length === 0) {
+    return res.status(400).send({ message: 'Attendance data is required!' });
   }
 
-  exports.postAttendance = async (req, res) => {
-    const attendance = req.body;
-  
-    if (!attendance || Object.keys(attendance).length === 0) {
-      return res.status(400).send({ message: "Attendance data is required!" });
+  try {
+    const result = await AttendanceModel.create(attendance);
+    res
+      .status(201)
+      .send({ message: 'Attendance posted successfully!', data: result });
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      return res
+        .status(400)
+        .send({ message: 'Validation error', details: err.message });
     }
-  
-    try {
-      const result = await AttendanceModel.create(attendance);
-      res.status(201).send({ message: "Attendance posted successfully!", data: result });
-    } catch (err) {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: "Validation error", details: err.message });
-      }
-      res.status(500).send({ message: "Attendance post failed!", error: err.message });
-    }
-  };
+    res
+      .status(500)
+      .send({ message: 'Attendance post failed!', error: err.message });
+  }
+};
+
+exports.updateAttendance = async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  try {
+    const result = await AttendanceModel.updateOne(
+      { _id: id },
+      { $set: { OfficeWorking: '8' } }
+    );
+    res.status(201).send(result);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.editAttendance = async (req, res) => {
+  const id = req.params.id;
+  const attendanceData = req.body;
+  console.log(id);
+  try {
+    const result = await AttendanceModel.updateOne(
+      { _id: id },
+      { $set: attendanceData }
+    );
+    res.status(201).send(result);
+  } catch (err) {
+    console.log(err);
+  }
+};
