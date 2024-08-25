@@ -15,6 +15,7 @@ exports.postAdvancePayment = async (req, res) => {
 // get attendance with userId
 exports.getAdvancePayment = async (req, res) => {
   const { userId, startDate, endDate } = req.query;
+  console.log(req?.query);
 
   try {
     const result = await advancePaymentModel.find({

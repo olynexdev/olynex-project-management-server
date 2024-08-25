@@ -160,7 +160,6 @@ exports.getAllAttendances = async (req, res) => {
 // get attendance with userId
 exports.getAttendanceWithUserId = async(req, res)=>{
   const { userId, startDate, endDate } = req.query;
-  console.log(req.query);
   try {
     const attendance = await AttendanceModel.find({
       userId: userId,
