@@ -77,6 +77,25 @@ exports.getAllAttendances = async (req, res) => {
   }
 };
 
+// get attendance with userId
+exports.getAttendanceWithUserId = async(req, res)=>{
+  const { userId, startDate, endDate } = req.query;
+  console.log(req.query);
+  try {
+    const attendance = await AttendanceModel.find({
+      userId: userId,
+      date: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    });
+
+    res.json(attendance);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch attendance data' });
+  }
+}
+
 // delete all attendances
 exports.deleteAllAttendance = async (req, res) => {
   try {
