@@ -16,6 +16,9 @@ async function initializeZKLib() {
         const logs = await zkInstance.getAttendances();
 
         if (logs && Array.isArray(logs.data)) {
+
+
+
           // Only process logs after the last seen timestamp
           const newLogs = logs.data.filter(
             log => new Date(log.recordTime) > lastSeenTimestamp
