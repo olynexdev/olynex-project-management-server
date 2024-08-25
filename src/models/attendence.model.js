@@ -19,12 +19,13 @@ const attendenceScema = new mongoose.Schema(
     OfficeWorking: {
       type: String,
       required: true,
-      
     },
-    note:{
+    overTime: {
+      overTime: Number,
+    },
+    note: {
       note: String,
-
-    }
+    },
   },
   {
     timestamps: true,
