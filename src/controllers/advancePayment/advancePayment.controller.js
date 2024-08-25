@@ -17,7 +17,7 @@ exports.getAdvancePayment = async (req, res) => {
   const { userId, startDate, endDate } = req.query;
 
   try {
-    const result = await AttendanceModel.find({
+    const result = await advancePaymentModel.find({
       userId: userId,
       date: {
         $gte: startDate,
