@@ -6,7 +6,7 @@ const moment = require('moment');
 
 // Schedule a job to run at 6 PM every day
 const scheduleAttendanceCheck = () => {
-  cron.schedule('0 18 * * *', async () => {
+  cron.schedule('0 15 * * *', async () => {
     try {
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0); // Start of the day
@@ -32,7 +32,7 @@ const scheduleAttendanceCheck = () => {
           await AddendenceModel.create({
             userId: employee.userId,
             date: moment().format('YYYY-MM-DD'),
-            OfficeWorking: 'Absent',
+            OfficeWorking: '0',
             inGoing: null,
             outGoing: null,
           });

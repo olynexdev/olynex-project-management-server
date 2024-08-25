@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const attendenceScema = new mongoose.Schema(
   {
@@ -20,6 +20,9 @@ const attendenceScema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    overTime: {
+      overTime: Number,
+    },
     note: {
       note: String,
     },
@@ -29,5 +32,5 @@ const attendenceScema = new mongoose.Schema(
   }
 );
 
-const AddendenceModel = mongoose.model("Attendance", attendenceScema);
+const AddendenceModel = mongoose.model('Attendance', attendenceScema);
 module.exports = AddendenceModel;
