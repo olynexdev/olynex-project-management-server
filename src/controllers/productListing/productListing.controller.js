@@ -94,22 +94,76 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+// get all product related counts
+const getAllProductsCount = async () => {
+  // Count all products in the database
+  const totalProductsCount = await ProductListingModel.countDocuments();
+
+  // Get the date 7 days ago from now
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  // Count products created in the last 7 days
+  const newProductsCount = await ProductListingModel.countDocuments({
+    createdAt: { $gte: sevenDaysAgo },
+  });
+
+  // Count products by category
+  const productsByCategory = await ProductListingModel.aggregate([
+    {
+      $group: {
+        _id: '$category',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  return {
+    totalProductsCount,
+    newProductsCount,
+    productsByCategory,
+  };
+};
+
+// get product related counts by year
 exports.productsCount = async (req, res) => {
   try {
+    const year = req.params.year;
+
+    if (year === 'All') {
+      const allData = await getAllProductsCount();
+      return res.status(201).json(allData);
+    }
+
+    // start and end dates for the specified or current year
+    const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
+    const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
+
+    // Common query to filter tasks by the year
+    const yearQuery = {
+      createdAt: { $gte: startDate, $lte: endDate },
+    };
     // Count all products
-    const totalProductsCount = await ProductListingModel.countDocuments();
+    const totalProductsCount = await ProductListingModel.countDocuments(
+      yearQuery
+    );
 
     // Get the date 7 days ago from now
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     // Count products created in the last 7 days
-    const newProductsCount = await ProductListingModel.countDocuments({
-      createdAt: { $gte: sevenDaysAgo },
-    });
+    let newProductsCount = 0;
+    if (sevenDaysAgo >= startDate && sevenDaysAgo <= endDate) {
+      newProductsCount = await ProductListingModel.countDocuments({
+        ...yearQuery,
+        createdAt: { $gte: sevenDaysAgo },
+      });
+    }
 
     // Count products by category
     const productsByCategory = await ProductListingModel.aggregate([
+      { $match: yearQuery },
       {
         $group: {
           _id: '$category',
