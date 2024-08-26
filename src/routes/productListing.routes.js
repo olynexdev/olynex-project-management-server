@@ -15,6 +15,6 @@ router.get('/get-products', getProducts); // get all products
 router.get('/get-product/:id', getProduct); // get single products
 router.delete('/delete-product/:id', deleteProduct); // delete a products
 router.patch('/edit-product/:id', updateProduct); // update a products
-router.get('/get-products-counts', productsCount); // products related count
+router.get('/get-products-counts/:year', productsCount); // products related count
 
 module.exports = router;

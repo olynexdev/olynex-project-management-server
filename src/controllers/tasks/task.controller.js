@@ -106,9 +106,50 @@ exports.getTask = async (req, res) => {
   }
 };
 
+// get all task related count
+const getAllTasksCount = async () => {
+  // Count all tasks in the database
+  const totalTasksCount = await TasksModel.countDocuments();
+
+  // Count tasks by status without filtering by year
+  const completedTasksCount = await TasksModel.countDocuments({
+    status: 'completed',
+  });
+  const pendingTasksCount = await TasksModel.countDocuments({
+    status: 'pending',
+  });
+  const inProgressTasksCount = await TasksModel.countDocuments({
+    status: 'progress',
+  });
+  const reviewTasksCount = await TasksModel.countDocuments({
+    status: 'review',
+  });
+
+  // Count tasks where the deadline has passed and the status is not 'completed'
+  const overdueTasksCount = await TasksModel.countDocuments({
+    status: { $ne: 'completed' },
+    taskDeadline: { $lt: new Date() }, // Deadline has passed
+  });
+
+  return {
+    totalTasksCount,
+    completedTasksCount,
+    pendingTasksCount,
+    inProgressTasksCount,
+    reviewTasksCount,
+    overdueTasksCount,
+  };
+};
+
+// get task related count by year
 exports.taskCount = async (req, res) => {
   try {
     const year = req.params.year;
+
+    if (year === 'All') {
+      const allData = await getAllTasksCount();
+      return res.status(201).json(allData);
+    }
 
     // start and end dates for the specified or current year
     const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
@@ -140,6 +181,13 @@ exports.taskCount = async (req, res) => {
       status: 'review',
     });
 
+    // Count tasks where the deadline has passed and the status is not 'completed'
+    const overdueTasksCount = await TasksModel.countDocuments({
+      ...yearQuery,
+      status: { $ne: 'completed' },
+      taskDeadline: { $lt: new Date() }, // Deadline has passed
+    });
+
     res.status(201).json({
       year,
       totalTasksCount,
@@ -147,6 +195,7 @@ exports.taskCount = async (req, res) => {
       pendingTasksCount,
       inProgressTasksCount,
       reviewTasksCount,
+      overdueTasksCount,
     });
   } catch (error) {
     // Handle any errors that occurred
