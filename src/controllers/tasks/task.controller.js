@@ -15,8 +15,11 @@ exports.getTasks = async (req, res) => {
     const { page = 1, limit = 10, userId } = req.query;
     const skip = (page - 1) * limit;
 
-    // Convert userId to number if provided
-    const numericUserId = userId ? parseInt(userId, 10) : undefined;
+    // Convert userId to a number if provided and valid
+    const numericUserId = userId ? Number(userId) : undefined;
+    if (isNaN(numericUserId)) {
+      return res.status(400).send({ message: 'Invalid userId' });
+    }
 
     // Build the filter query
     const filter = numericUserId
@@ -48,6 +51,7 @@ exports.getTasks = async (req, res) => {
     res.status(500).send({ message: 'Failed to retrieve tasks', err });
   }
 };
+
 
 // get running task
 exports.getRunningTask = async (req, res) => {
