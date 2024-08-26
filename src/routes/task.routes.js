@@ -4,6 +4,7 @@ const {
   getTasks,
   getTask,
   getRunningTask,
+  taskCount,
 } = require('../controllers/tasks/task.controller');
 const {
   employeeAcceptTask,
@@ -22,7 +23,9 @@ const {
   mockupConfirmTask,
 } = require('../controllers/tasks/mockupTask.controller');
 const { seoAcceptTask } = require('../controllers/tasks/SeoTask.controller');
-const { deliveryTeamUploadTask } = require('../controllers/tasks/deliveryTeamTask.controller');
+const {
+  deliveryTeamUploadTask,
+} = require('../controllers/tasks/deliveryTeamTask.controller');
 
 const router = express.Router();
 
@@ -51,6 +54,7 @@ router.put('/mockup-confirm-task/:id', mockupConfirmTask);
 router.put('/seo-accept-task/:id', seoAcceptTask);
 
 // delivery team related
-router.put("/delivery-member-uploaded-task/:id", deliveryTeamUploadTask)
+router.put('/delivery-member-uploaded-task/:id', deliveryTeamUploadTask);
+router.get('/get-tasks-counts/:year', taskCount);
 
 module.exports = router;
