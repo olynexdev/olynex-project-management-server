@@ -128,24 +128,25 @@ const getAllProductsCount = async () => {
 // get product related counts by year
 exports.productsCount = async (req, res) => {
   try {
-    const year = req.params.year;
+    const month = req.params.month;
+    const currentYear = new Date().getFullYear();
 
-    if (year === 'All') {
+    if (month === 'All') {
       const allData = await getAllProductsCount();
       return res.status(201).json(allData);
     }
 
     // start and end dates for the specified or current year
-    const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
-    const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
+    const startDate = new Date(`${currentYear}-${month}-01T00:00:00.000Z`);
+    const endDate = new Date(currentYear, parseInt(month), 0, 23, 59, 59, 999);
 
     // Common query to filter tasks by the year
-    const yearQuery = {
+    const monthQuery = {
       createdAt: { $gte: startDate, $lte: endDate },
     };
     // Count all products
     const totalProductsCount = await ProductListingModel.countDocuments(
-      yearQuery
+      monthQuery
     );
 
     // Get the date 7 days ago from now
@@ -156,14 +157,14 @@ exports.productsCount = async (req, res) => {
     let newProductsCount = 0;
     if (sevenDaysAgo >= startDate && sevenDaysAgo <= endDate) {
       newProductsCount = await ProductListingModel.countDocuments({
-        ...yearQuery,
+        ...monthQuery,
         createdAt: { $gte: sevenDaysAgo },
       });
     }
 
     // Count products by category
     const productsByCategory = await ProductListingModel.aggregate([
-      { $match: yearQuery },
+      { $match: monthQuery },
       {
         $group: {
           _id: '$category',

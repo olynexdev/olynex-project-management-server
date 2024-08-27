@@ -144,52 +144,59 @@ const getAllTasksCount = async () => {
 // get task related count by year
 exports.taskCount = async (req, res) => {
   try {
-    const year = req.params.year;
+    const userId = req?.query?.userId;
+    const month = req?.params?.month;
+    const currentDate = new Date();
+    const currentYear = new Date().getFullYear();
 
-    if (year === 'All') {
+    if (month === 'All') {
       const allData = await getAllTasksCount();
       return res.status(201).json(allData);
     }
 
-    // start and end dates for the specified or current year
-    const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
-    const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
+    // Calculate the start and end dates for the specified month
+    const startDate = new Date(`${currentYear}-${month}-01T00:00:00.000Z`);
+    const endDate = new Date(currentYear, parseInt(month), 0, 23, 59, 59, 999);
 
-    // Common query to filter tasks by the year
-    const yearQuery = {
+    // Common query to filter tasks by the month
+    let monthQuery = {
       createdAt: { $gte: startDate, $lte: endDate },
     };
 
-    // Count all tasks for the specified year
-    const totalTasksCount = await TasksModel.countDocuments(yearQuery);
+    if (userId && !isNaN(parseInt(userId))) {
+      monthQuery['taskReceiver.userId'] = parseInt(userId);
+      console.log('error in query', monthQuery);
+    }
 
-    // Count tasks by status for the specified year
+    // Count all tasks for the specified month
+    const totalTasksCount = await TasksModel.countDocuments(monthQuery);
+
+    // Count tasks by status for the specified month
     const completedTasksCount = await TasksModel.countDocuments({
-      ...yearQuery,
+      ...monthQuery,
       status: 'completed',
     });
     const pendingTasksCount = await TasksModel.countDocuments({
-      ...yearQuery,
+      ...monthQuery,
       status: 'pending',
     });
     const inProgressTasksCount = await TasksModel.countDocuments({
-      ...yearQuery,
+      ...monthQuery,
       status: 'progress',
     });
     const reviewTasksCount = await TasksModel.countDocuments({
-      ...yearQuery,
+      ...monthQuery,
       status: 'review',
     });
 
     // Count tasks where the deadline has passed and the status is not 'completed'
     const overdueTasksCount = await TasksModel.countDocuments({
-      ...yearQuery,
+      ...monthQuery,
       status: { $ne: 'completed' },
-      taskDeadline: { $lt: new Date() }, // Deadline has passed
+      taskDeadline: { $lt: currentDate.toISOString() }, // Correct comparison for overdue
     });
 
     res.status(201).json({
-      year,
       totalTasksCount,
       completedTasksCount,
       pendingTasksCount,

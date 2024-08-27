@@ -65,24 +65,26 @@ const getAllUsersCount = async () => {
 // get users related count by year
 exports.usersCount = async (req, res) => {
   try {
-    const year = req.params.year;
+    const month = req.params.month;
+    const currentYear = new Date().getFullYear();
 
-    if (year === 'All') {
+    if (month === 'All') {
       const allData = await getAllUsersCount();
       return res.status(201).json(allData);
     }
 
-    const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
-    const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
+    // Calculate the start and end dates for the specified month
+    const startDate = new Date(`${currentYear}-${month}-01T00:00:00.000Z`);
+    const endDate = new Date(currentYear, parseInt(month), 0, 23, 59, 59, 999);
 
-    // Common query to filter tasks by the year
-    const yearQuery = {
+    // Common query to filter tasks by the month
+    const monthQuery = {
       createdAt: { $gte: startDate, $lte: endDate },
     };
 
     // Count all users whose designation is 'employee' (participants)
     const participantsCount = await UserModel.countDocuments({
-      ...yearQuery,
+      ...monthQuery,
       'personalInfo.designation': 'employee',
     });
     console.log(participantsCount);
