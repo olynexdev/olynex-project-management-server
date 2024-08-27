@@ -26,6 +26,6 @@ router.get('/get-user', getUserwithEmail);
 router.get('/get-user-role/:email', getUserWithRole);
 router.get('/get-user/:id', getUserById);
 router.get('/get-user-by-user-id/:userId', getUserbyUserId);
-router.get('/get-users-count/:year', usersCount);
+router.get('/get-users-count/:month', usersCount);
 
 module.exports = router;

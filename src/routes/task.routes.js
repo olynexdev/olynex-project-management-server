@@ -55,6 +55,6 @@ router.put('/seo-accept-task/:id', seoAcceptTask);
 
 // delivery team related
 router.put('/delivery-member-uploaded-task/:id', deliveryTeamUploadTask);
-router.get('/get-tasks-counts/:year', taskCount);
+router.get('/get-tasks-counts/:month', taskCount);
 
 module.exports = router;
