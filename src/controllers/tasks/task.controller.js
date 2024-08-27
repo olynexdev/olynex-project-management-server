@@ -144,7 +144,9 @@ const getAllTasksCount = async () => {
 // get task related count by year
 exports.taskCount = async (req, res) => {
   try {
-    const month = req.params.month;
+    const userId = req?.query?.userId;
+    const month = req?.params?.month;
+    const currentDate = new Date();
     const currentYear = new Date().getFullYear();
 
     if (month === 'All') {
@@ -157,9 +159,14 @@ exports.taskCount = async (req, res) => {
     const endDate = new Date(currentYear, parseInt(month), 0, 23, 59, 59, 999);
 
     // Common query to filter tasks by the month
-    const monthQuery = {
+    let monthQuery = {
       createdAt: { $gte: startDate, $lte: endDate },
     };
+
+    if (userId && !isNaN(parseInt(userId))) {
+      monthQuery['taskReceiver.userId'] = parseInt(userId);
+      console.log('error in query', monthQuery);
+    }
 
     // Count all tasks for the specified month
     const totalTasksCount = await TasksModel.countDocuments(monthQuery);
@@ -186,7 +193,7 @@ exports.taskCount = async (req, res) => {
     const overdueTasksCount = await TasksModel.countDocuments({
       ...monthQuery,
       status: { $ne: 'completed' },
-      taskDeadline: { $lt: new Date() }, // Deadline has passed
+      taskDeadline: { $lt: currentDate.toISOString() }, // Correct comparison for overdue
     });
 
     res.status(201).json({
