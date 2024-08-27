@@ -14,13 +14,8 @@ exports.getTasks = async (req, res) => {
   try {
     const { page = 1, limit = 10, userId } = req.query;
     const skip = (page - 1) * limit;
-
-    // Convert userId to a number if provided and valid
-    const numericUserId = userId ? Number(userId) : undefined;
-    if (isNaN(numericUserId)) {
-      return res.status(400).send({ message: 'Invalid userId' });
-    }
-
+    // Convert userId to number if provided
+    const numericUserId = userId ? parseInt(userId, 10) : undefined;
     // Build the filter query
     const filter = numericUserId
       ? {
@@ -30,18 +25,14 @@ exports.getTasks = async (req, res) => {
           ],
         }
       : {};
-
     // Get the total count of tasks based on the filter
     const totalTasks = await TasksModel.countDocuments(filter);
-
     // Find tasks with pagination and filtering
     const tasks = await TasksModel.find(filter)
       .skip(skip)
       .limit(parseInt(limit));
-
     // Calculate total pages
     const totalPages = Math.ceil(totalTasks / limit);
-
     // Send the paginated tasks with total pages
     res.status(200).send({
       tasks,
@@ -110,9 +101,50 @@ exports.getTask = async (req, res) => {
   }
 };
 
+// get all task related count
+const getAllTasksCount = async () => {
+  // Count all tasks in the database
+  const totalTasksCount = await TasksModel.countDocuments();
+
+  // Count tasks by status without filtering by year
+  const completedTasksCount = await TasksModel.countDocuments({
+    status: 'completed',
+  });
+  const pendingTasksCount = await TasksModel.countDocuments({
+    status: 'pending',
+  });
+  const inProgressTasksCount = await TasksModel.countDocuments({
+    status: 'progress',
+  });
+  const reviewTasksCount = await TasksModel.countDocuments({
+    status: 'review',
+  });
+
+  // Count tasks where the deadline has passed and the status is not 'completed'
+  const overdueTasksCount = await TasksModel.countDocuments({
+    status: { $ne: 'completed' },
+    taskDeadline: { $lt: new Date() }, // Deadline has passed
+  });
+
+  return {
+    totalTasksCount,
+    completedTasksCount,
+    pendingTasksCount,
+    inProgressTasksCount,
+    reviewTasksCount,
+    overdueTasksCount,
+  };
+};
+
+// get task related count by year
 exports.taskCount = async (req, res) => {
   try {
     const year = req.params.year;
+
+    if (year === 'All') {
+      const allData = await getAllTasksCount();
+      return res.status(201).json(allData);
+    }
 
     // start and end dates for the specified or current year
     const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
@@ -144,6 +176,13 @@ exports.taskCount = async (req, res) => {
       status: 'review',
     });
 
+    // Count tasks where the deadline has passed and the status is not 'completed'
+    const overdueTasksCount = await TasksModel.countDocuments({
+      ...yearQuery,
+      status: { $ne: 'completed' },
+      taskDeadline: { $lt: new Date() }, // Deadline has passed
+    });
+
     res.status(201).json({
       year,
       totalTasksCount,
@@ -151,6 +190,7 @@ exports.taskCount = async (req, res) => {
       pendingTasksCount,
       inProgressTasksCount,
       reviewTasksCount,
+      overdueTasksCount,
     });
   } catch (error) {
     // Handle any errors that occurred
