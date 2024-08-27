@@ -1,6 +1,6 @@
-const AttendanceModel = require('../../models/attendence.model');
-const UserModel = require('../../models/users.model');
-const moment = require('moment');
+const AttendanceModel = require("../../models/attendence.model");
+const UserModel = require("../../models/users.model");
+const moment = require("moment");
 
 // Map of month names to their numerical values
 const monthMap = {
@@ -129,7 +129,7 @@ exports.getAllAttendances = async (req, res) => {
     if (dateQuery) {
       const selectedDate = new Date(dateQuery);
       if (isNaN(selectedDate)) {
-        return res.status(400).send('Invalid date format.');
+        return res.status(400).send("Invalid date format.");
       }
       const startNewDate = new Date(selectedDate.setUTCHours(0, 0, 0, 0)); // Start of the selected day
       const endNewDate = new Date(selectedDate.setUTCHours(23, 59, 59, 999)); // End of the selected day
@@ -152,28 +152,54 @@ exports.getAllAttendances = async (req, res) => {
       totalRecords,
     });
   } catch (err) {
-    console.error('Error fetching attendance data:', err);
-    res.status(500).send('Internal Server Error');
+    console.error("Error fetching attendance data:", err);
+    res.status(500).send("Internal Server Error");
   }
 };
 
-// get attendance with userId
-exports.getAttendanceWithUserId = async(req, res)=>{
-  const { userId, startDate, endDate } = req.query;
+
+exports.getAttendanceWithUserId = async (req, res) => {
+  const { userId, startDate, endDate, month } = req.query;
   try {
-    const attendance = await AttendanceModel.find({
-      userId: userId,
-      date: {
+    // Initialize the query object
+    const query = {};
+
+    // Add userId condition if present
+    if (userId) {
+      query.userId = userId;
+    }
+
+    // Add date condition based on the selected month
+    if (month && month !== "All") {
+      const year = new Date().getFullYear(); // Get the current year
+      const startDate = new Date(`${year}-${month}-01T00:00:00.000Z`);
+      // Calculate the last day of the month
+      const endDate = new Date(year, parseInt(month), 0, 23, 59, 59, 999);
+      // Query for records within the selected month
+      query.createdAt = {
         $gte: startDate,
         $lte: endDate,
-      },
+      };
+    } else if (startDate && endDate) {
+      // If a date range is provided, use it to query records
+      query.date = {
+        $gte: startDate,
+        $lte: endDate,
+      };
+    }
+
+    // Fetch attendance data based on the constructed query
+    const attendance = await AttendanceModel.find(query).sort({
+      createdAt: -1,
     });
 
     res.json(attendance);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch attendance data' });
+    console.error(error); // Log the error for debugging purposes
+    res.status(500).json({ error: "Failed to fetch attendance data" });
   }
-}
+};
+
 
 // delete all attendances
 exports.deleteAllAttendance = async (req, res) => {
@@ -181,7 +207,7 @@ exports.deleteAllAttendance = async (req, res) => {
     const result = await AttendanceModel.deleteMany();
     res.status(201).send(result);
   } catch (err) {
-    res.status(500).send({ message: 'Failed to delete all attendance:', err });
+    res.status(500).send({ message: "Failed to delete all attendance:", err });
   }
 };
 
@@ -190,23 +216,23 @@ exports.postAttendance = async (req, res) => {
   const attendance = req.body;
 
   if (!attendance || Object.keys(attendance).length === 0) {
-    return res.status(400).send({ message: 'Attendance data is required!' });
+    return res.status(400).send({ message: "Attendance data is required!" });
   }
 
   try {
     const result = await AttendanceModel.create(attendance);
     res
       .status(201)
-      .send({ message: 'Attendance posted successfully!', data: result });
+      .send({ message: "Attendance posted successfully!", data: result });
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err.name === "ValidationError") {
       return res
         .status(400)
-        .send({ message: 'Validation error', details: err.message });
+        .send({ message: "Validation error", details: err.message });
     }
     res
       .status(500)
-      .send({ message: 'Attendance post failed!', error: err.message });
+      .send({ message: "Attendance post failed!", error: err.message });
   }
 };
 
@@ -214,13 +240,13 @@ exports.postAbsentAttendance = async (req, res) => {
   try {
     const users = await UserModel.find(); // Fetch all users from the database
     const attendance = await AttendanceModel.find({
-      date: moment().format('YYYY-MM-DD'), // Filter attendance for the current day
+      date: moment().format("YYYY-MM-DD"), // Filter attendance for the current day
     });
 
     // Loop through each user
     for (const user of users) {
       const userAttendance = attendance.find(
-        record => record.userId === user.userId
+        (record) => record.userId === user.userId
       );
 
       // Check if the user has no attendance record for the day or if outGoing is missing
@@ -233,11 +259,11 @@ exports.postAbsentAttendance = async (req, res) => {
         ) {
           const newAttendance = new AttendanceModel({
             userId: user.userId,
-            date: moment().format('YYYY-MM-DD'),
+            date: moment().format("YYYY-MM-DD"),
             inGoing: null,
             outGoing: null,
-            OfficeWorking: 'Absent',
-            note: '',
+            OfficeWorking: "Absent",
+            note: "",
           });
           await newAttendance.save(); // Save the absent record to the database
           console.log(`Marked user ${user.userId} as absent`);
@@ -245,10 +271,10 @@ exports.postAbsentAttendance = async (req, res) => {
       }
     }
 
-    res.status(200).json({ message: 'Absent attendance posted successfully' });
+    res.status(200).json({ message: "Absent attendance posted successfully" });
   } catch (error) {
-    console.error('Error posting absent attendance:', error);
-    res.status(500).json({ message: 'Error posting absent attendance' });
+    console.error("Error posting absent attendance:", error);
+    res.status(500).json({ message: "Error posting absent attendance" });
   }
 };
 
@@ -258,7 +284,7 @@ exports.updateAttendance = async (req, res) => {
   try {
     const result = await AttendanceModel.updateOne(
       { _id: id },
-      { $set: { OfficeWorking: '8' } }
+      { $set: { OfficeWorking: "8" } }
     );
     res.status(201).send(result);
   } catch (err) {

@@ -35,6 +35,7 @@ const scheduleAttendanceCheck = () => {
             OfficeWorking: '0',
             inGoing: null,
             outGoing: null,
+            overTime:0,
           });
           console.log(`Employee ${employee.userId} marked as absent.`);
         }
