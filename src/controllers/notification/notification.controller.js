@@ -13,15 +13,46 @@ exports.addNotification = async (req, res) => {
 
 // Get notifications for a specific user
 exports.getNotification = async (req, res) => {
-  const id = req.params.id;
+  const userId = req.params.id;
+  console.log(req.query.offset);
+
+  const { offset = 0, limit = 10 } = req.query;
 
   try {
-    const result = await NotificationModel.find({ receiverId: id })
+    // Convert offset and limit to numbers
+    const offsetNumber = parseInt(offset, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    // Calculate total number of notifications
+    const totalNotifications = await NotificationModel.countDocuments({
+      receiverId: userId,
+    });
+    const totalPages = Math.ceil(totalNotifications / limitNumber);
+
+    // Fetch notifications with pagination
+    const notifications = await NotificationModel.find({ receiverId: userId })
       .sort({ createdAt: -1 }) // Sort by newest first
+      .skip(offsetNumber)
+      .limit(limitNumber)
       .exec();
-    res.status(201).send(result);
+
+    const nextOffset =
+      offsetNumber + limitNumber < totalNotifications
+        ? offsetNumber + limitNumber
+        : undefined;
+
+    res.status(200).send({
+      notifications,
+      nextOffset,
+      totalPages,
+    });
   } catch (error) {
-    res.status(500).send({ message: 'Cannot get notification!', error });
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch notifications',
+      error: error.message,
+    });
   }
 };
 

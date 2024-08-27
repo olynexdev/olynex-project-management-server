@@ -1,6 +1,11 @@
 // src/routes/user.routes.js
 const express = require("express");
-const { addDesignation, getDesignation, deleteDesignation, updateDesignation } = require("../controllers/designation/designation.controller");
+const {
+  addDesignation,
+  getDesignation,
+  deleteDesignation,
+  updateDesignation,
+} = require("../controllers/designation/designation.controller");
 
 const router = express.Router();
 

@@ -53,6 +53,15 @@ const taskSchema = new mongoose.Schema(
         rejectDate: { type: String },
       },
     ],
+    uploadInfo: {
+      
+        note: { type: String },
+        userId: { type: Number },
+        name: { type: String },
+        marketPlaces: Array,
+        uploadDate: { type: String },
+      
+    },
   },
   { timestamps: true }
 );
