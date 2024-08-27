@@ -1,6 +1,6 @@
 const TasksModel = require('../../models/tasks.model');
 
-// get all task related count
+// Get all task-related counts
 const getAllTasksCount = async userId => {
   let filter = {};
 
@@ -9,7 +9,7 @@ const getAllTasksCount = async userId => {
     filter['taskReceiver.userId'] = parseInt(userId);
   }
 
-  // Count all tasks in the database with the applied filter
+  // Count tasks in the database based on the applied filter
   const totalTasksCount = await TasksModel.countDocuments(filter);
 
   // Count tasks by status without filtering by year
@@ -34,7 +34,7 @@ const getAllTasksCount = async userId => {
   const overdueTasksCount = await TasksModel.countDocuments({
     ...filter,
     status: { $ne: 'completed' },
-    taskDeadline: { $lt: new Date() }, // Deadline has passed
+    taskDeadline: { $lt: new Date() },
   });
 
   return {
@@ -47,6 +47,7 @@ const getAllTasksCount = async userId => {
   };
 };
 
+// Get task counts filtered by user designation, status, and month
 const getTaskByDesignation = async (userId, designation, monthQuery) => {
   const designationTaskCounts = await TasksModel.aggregate([
     {
@@ -125,13 +126,14 @@ const getTaskByDesignation = async (userId, designation, monthQuery) => {
   };
 };
 
+// Get task counts by designation without filtering by month
 const getAllTaskByDesignation = async (designation, userId) => {
   const designationTaskCounts = await TasksModel.aggregate([
     {
       $match: {
         approvalChain: {
           $elemMatch: {
-            userId: parseInt(userId), // Matching userId within approvalChain
+            userId: parseInt(userId),
             designation,
             status: { $in: ['accepted', 'pending', 'completed', 'rejected'] },
           },
@@ -146,7 +148,7 @@ const getAllTaskByDesignation = async (designation, userId) => {
             $match: {
               approvalChain: {
                 $elemMatch: {
-                  userId: parseInt(userId), // Matching userId within approvalChain
+                  userId: parseInt(userId),
                   designation,
                   status: 'accepted',
                 },
@@ -160,7 +162,7 @@ const getAllTaskByDesignation = async (designation, userId) => {
             $match: {
               approvalChain: {
                 $elemMatch: {
-                  userId: parseInt(userId), // Matching userId within approvalChain
+                  userId: parseInt(userId),
                   designation,
                   status: 'pending',
                 },
@@ -174,7 +176,7 @@ const getAllTaskByDesignation = async (designation, userId) => {
             $match: {
               approvalChain: {
                 $elemMatch: {
-                  userId: parseInt(userId), // Matching userId within approvalChain
+                  userId: parseInt(userId),
                   designation,
                   status: 'rejected',
                 },
@@ -202,23 +204,17 @@ const getAllTaskByDesignation = async (designation, userId) => {
   };
 };
 
-// get task related count by year
+// Get task-related counts by year and month, or by designation
 exports.taskCount = async (req, res) => {
   try {
-    const designation = req?.query.designation;
-    const userId = req?.query?.userId;
-    const month = req?.params?.month;
-    const currentDate = new Date();
+    const designation = req.query.designation;
+    const userId = req.query.userId;
+    const month = req.params.month;
     const currentYear = new Date().getFullYear();
 
-    // all task count for specific designation user id or all
+    // All task counts for a specific designation and userId, or all tasks if month is 'All'
     if (month === 'All') {
-      if (
-        designation &&
-        designation !== 'none' &&
-        userId &&
-        !isNaN(parseInt(userId))
-      ) {
+      if (designation && designation !== 'none' && userId) {
         const allTaskCountData = await getAllTaskByDesignation(
           designation,
           userId
@@ -234,11 +230,12 @@ exports.taskCount = async (req, res) => {
     const startDate = new Date(`${currentYear}-${month}-01T00:00:00.000Z`);
     const endDate = new Date(currentYear, parseInt(month), 0, 23, 59, 59, 999);
 
-    // Common query to filter tasks by the month
+    // Common query to filter tasks by the specified month
     let monthQuery = {
       createdAt: { $gte: startDate, $lte: endDate },
     };
 
+    // Task counts filtered by designation within a specific month
     if (designation && designation !== 'none') {
       const designationData = await getTaskByDesignation(
         userId,
@@ -248,11 +245,12 @@ exports.taskCount = async (req, res) => {
       return res.status(201).json(designationData);
     }
 
+    // Task counts for a specific userId within a specific month
     if (userId && !isNaN(parseInt(userId))) {
       monthQuery['taskReceiver.userId'] = parseInt(userId);
     }
 
-    // Count all tasks for the specified month
+    // Count tasks for the specified month
     const totalTasksCount = await TasksModel.countDocuments(monthQuery);
 
     // Count tasks by status for the specified month
@@ -273,11 +271,11 @@ exports.taskCount = async (req, res) => {
       status: 'review',
     });
 
-    // Count tasks where the deadline has passed and the status is not 'completed'
+    // Count overdue tasks (deadline passed and status is not 'completed')
     const overdueTasksCount = await TasksModel.countDocuments({
       ...monthQuery,
       status: { $ne: 'completed' },
-      taskDeadline: { $lt: currentDate.toISOString() }, // Correct comparison for overdue
+      taskDeadline: { $lt: new Date() },
     });
 
     res.status(201).json({
@@ -289,7 +287,6 @@ exports.taskCount = async (req, res) => {
       overdueTasksCount,
     });
   } catch (error) {
-    // Handle any errors that occurred
     res.status(500).json({ message: 'Error retrieving task counts', error });
   }
 };
