@@ -1,15 +1,16 @@
 // src/models/user.model.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const DepartmentSchema = new mongoose.Schema({
-  department: {
-    type: String,
-    required: true,
+const DepartmentSchema = new mongoose.Schema(
+  {
+    department: {
+      type: String,
+      required: true,
+    },
   },
-}, 
-{ timestamps: true }
+  { timestamps: true }
 );
 
-const DepartmentModel = mongoose.model('Department', DepartmentSchema);
+const DepartmentModel = mongoose.model("Department", DepartmentSchema);
 
 module.exports = DepartmentModel;
