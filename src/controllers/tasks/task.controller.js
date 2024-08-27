@@ -14,10 +14,8 @@ exports.getTasks = async (req, res) => {
   try {
     const { page = 1, limit = 10, userId } = req.query;
     const skip = (page - 1) * limit;
-
     // Convert userId to number if provided
     const numericUserId = userId ? parseInt(userId, 10) : undefined;
-
     // Build the filter query
     const filter = numericUserId
       ? {
@@ -27,18 +25,14 @@ exports.getTasks = async (req, res) => {
           ],
         }
       : {};
-
     // Get the total count of tasks based on the filter
     const totalTasks = await TasksModel.countDocuments(filter);
-
     // Find tasks with pagination and filtering
     const tasks = await TasksModel.find(filter)
       .skip(skip)
       .limit(parseInt(limit));
-
     // Calculate total pages
     const totalPages = Math.ceil(totalTasks / limit);
-
     // Send the paginated tasks with total pages
     res.status(200).send({
       tasks,
@@ -48,6 +42,7 @@ exports.getTasks = async (req, res) => {
     res.status(500).send({ message: 'Failed to retrieve tasks', err });
   }
 };
+
 
 // get running task
 exports.getRunningTask = async (req, res) => {
