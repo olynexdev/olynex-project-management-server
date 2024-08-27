@@ -4,7 +4,6 @@ const {
   getTasks,
   getTask,
   getRunningTask,
-  taskCount,
 } = require('../controllers/tasks/task.controller');
 const {
   employeeAcceptTask,
@@ -26,6 +25,7 @@ const { seoAcceptTask } = require('../controllers/tasks/SeoTask.controller');
 const {
   deliveryTeamUploadTask,
 } = require('../controllers/tasks/deliveryTeamTask.controller');
+const { taskCount } = require('../controllers/tasks/taskCount.controller');
 
 const router = express.Router();
 
