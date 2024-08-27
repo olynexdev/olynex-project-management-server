@@ -87,7 +87,6 @@ exports.usersCount = async (req, res) => {
       ...monthQuery,
       'personalInfo.designation': 'employee',
     });
-    console.log(participantsCount);
 
     res.status(201).json({
       participantsCount,
