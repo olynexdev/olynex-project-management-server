@@ -1,6 +1,6 @@
-const AttendanceModel = require("../../models/attendence.model");
-const UserModel = require("../../models/users.model");
-const moment = require("moment");
+const AttendanceModel = require('../../models/attendence.model');
+const UserModel = require('../../models/users.model');
+const moment = require('moment');
 
 // Map of month names to their numerical values
 const monthMap = {
@@ -17,68 +17,6 @@ const monthMap = {
   November: 10,
   December: 11,
 };
-
-// exports.getAllAttendances = async (req, res) => {
-//   const searchQuery = req.query.search;
-//   const monthQuery = req.query.month;
-//   const dateQuery = req.query.date; // date format is 2024-08-24T05:41:31.659Z
-//   const id = parseInt(searchQuery, 10);
-//   const page = parseInt(req.query.page, 10) || 1; // Current page, default is 1
-//   const limit = parseInt(req.query.limit, 10) || 10; // Number of items per page, default is 10
-//   const skip = (page - 1) * limit; // Number of items to skip
-
-//   try {
-//     let attendances;
-
-//     let startDate = null;
-//     let endDate = null;
-
-//     // filter with month
-//     if (monthQuery && monthMap[monthQuery] !== undefined) {
-//       console.log('object sfgasdfhdafghfg');
-//       const selectedMonth = monthMap[monthQuery];
-//       const currentYear = new Date().getFullYear();
-
-//       startDate = new Date(currentYear, selectedMonth, 1); // month first date
-//       endDate = new Date(currentYear, selectedMonth + 1, 1); // month end date
-//       attendances = await AttendanceModel.find({
-//         createdAt: {
-//           $gte: startDate,
-//           $lt: endDate,
-//         },
-//       });
-//       return res.json(attendances);
-//     }
-
-//     // query for for search or filter with date
-//     const query = {};
-
-//     // search query
-//     if (id) {
-//       query.userId = id;
-//     }
-
-//     // date query
-//     if (dateQuery) {
-//       // Convert dateQuery to a date object
-//       const selectedDate = new Date(dateQuery);
-//       if (isNaN(selectedDate)) {
-//         return res.status(400).send('Invalid date format.');
-//       }
-//       const startNewDate = new Date(selectedDate.setUTCHours(0, 0, 0, 0)); // Start of the selected day
-//       const endNewDate = new Date(selectedDate.setUTCHours(23, 59, 59, 999)); // End of the selected day
-//       query.createdAt = { $gte: startNewDate, $lt: endNewDate };
-//     }
-
-//     // Fetch the data from MongoDB
-//     attendances = await AttendanceModel.find(query);
-
-//     res.json(attendances);
-//   } catch (err) {
-//     console.error('Error fetching attendance data:', err);
-//     res.status(500).send('Internal Server Error');
-//   }
-// };
 
 exports.getAllAttendances = async (req, res) => {
   const searchQuery = req.query.search;
@@ -126,10 +64,10 @@ exports.getAllAttendances = async (req, res) => {
     }
 
     // date query
-    if (dateQuery) {
+    if (dateQuery && !id) {
       const selectedDate = new Date(dateQuery);
       if (isNaN(selectedDate)) {
-        return res.status(400).send("Invalid date format.");
+        return res.status(400).send('Invalid date format.');
       }
       const startNewDate = new Date(selectedDate.setUTCHours(0, 0, 0, 0)); // Start of the selected day
       const endNewDate = new Date(selectedDate.setUTCHours(23, 59, 59, 999)); // End of the selected day
@@ -152,11 +90,10 @@ exports.getAllAttendances = async (req, res) => {
       totalRecords,
     });
   } catch (err) {
-    console.error("Error fetching attendance data:", err);
-    res.status(500).send("Internal Server Error");
+    console.error('Error fetching attendance data:', err);
+    res.status(500).send('Internal Server Error');
   }
 };
-
 
 exports.getAttendanceWithUserId = async (req, res) => {
   const { userId, startDate, endDate, month } = req.query;
@@ -170,7 +107,7 @@ exports.getAttendanceWithUserId = async (req, res) => {
     }
 
     // Add date condition based on the selected month
-    if (month && month !== "All") {
+    if (month && month !== 'All') {
       const year = new Date().getFullYear(); // Get the current year
       const startDate = new Date(`${year}-${month}-01T00:00:00.000Z`);
       // Calculate the last day of the month
@@ -196,10 +133,9 @@ exports.getAttendanceWithUserId = async (req, res) => {
     res.json(attendance);
   } catch (error) {
     console.error(error); // Log the error for debugging purposes
-    res.status(500).json({ error: "Failed to fetch attendance data" });
+    res.status(500).json({ error: 'Failed to fetch attendance data' });
   }
 };
-
 
 // delete all attendances
 exports.deleteAllAttendance = async (req, res) => {
@@ -207,7 +143,7 @@ exports.deleteAllAttendance = async (req, res) => {
     const result = await AttendanceModel.deleteMany();
     res.status(201).send(result);
   } catch (err) {
-    res.status(500).send({ message: "Failed to delete all attendance:", err });
+    res.status(500).send({ message: 'Failed to delete all attendance:', err });
   }
 };
 
@@ -216,23 +152,23 @@ exports.postAttendance = async (req, res) => {
   const attendance = req.body;
 
   if (!attendance || Object.keys(attendance).length === 0) {
-    return res.status(400).send({ message: "Attendance data is required!" });
+    return res.status(400).send({ message: 'Attendance data is required!' });
   }
 
   try {
     const result = await AttendanceModel.create(attendance);
     res
       .status(201)
-      .send({ message: "Attendance posted successfully!", data: result });
+      .send({ message: 'Attendance posted successfully!', data: result });
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === 'ValidationError') {
       return res
         .status(400)
-        .send({ message: "Validation error", details: err.message });
+        .send({ message: 'Validation error', details: err.message });
     }
     res
       .status(500)
-      .send({ message: "Attendance post failed!", error: err.message });
+      .send({ message: 'Attendance post failed!', error: err.message });
   }
 };
 
@@ -240,13 +176,13 @@ exports.postAbsentAttendance = async (req, res) => {
   try {
     const users = await UserModel.find(); // Fetch all users from the database
     const attendance = await AttendanceModel.find({
-      date: moment().format("YYYY-MM-DD"), // Filter attendance for the current day
+      date: moment().format('YYYY-MM-DD'), // Filter attendance for the current day
     });
 
     // Loop through each user
     for (const user of users) {
       const userAttendance = attendance.find(
-        (record) => record.userId === user.userId
+        record => record.userId === user.userId
       );
 
       // Check if the user has no attendance record for the day or if outGoing is missing
@@ -259,11 +195,11 @@ exports.postAbsentAttendance = async (req, res) => {
         ) {
           const newAttendance = new AttendanceModel({
             userId: user.userId,
-            date: moment().format("YYYY-MM-DD"),
+            date: moment().format('YYYY-MM-DD'),
             inGoing: null,
             outGoing: null,
-            OfficeWorking: "Absent",
-            note: "",
+            OfficeWorking: 'Absent',
+            note: '',
           });
           await newAttendance.save(); // Save the absent record to the database
           console.log(`Marked user ${user.userId} as absent`);
@@ -271,10 +207,10 @@ exports.postAbsentAttendance = async (req, res) => {
       }
     }
 
-    res.status(200).json({ message: "Absent attendance posted successfully" });
+    res.status(200).json({ message: 'Absent attendance posted successfully' });
   } catch (error) {
-    console.error("Error posting absent attendance:", error);
-    res.status(500).json({ message: "Error posting absent attendance" });
+    console.error('Error posting absent attendance:', error);
+    res.status(500).json({ message: 'Error posting absent attendance' });
   }
 };
 
@@ -284,7 +220,7 @@ exports.updateAttendance = async (req, res) => {
   try {
     const result = await AttendanceModel.updateOne(
       { _id: id },
-      { $set: { OfficeWorking: "8" } }
+      { $set: { OfficeWorking: '8' } }
     );
     res.status(201).send(result);
   } catch (err) {
@@ -304,5 +240,106 @@ exports.editAttendance = async (req, res) => {
     res.status(201).send(result);
   } catch (err) {
     console.log(err);
+  }
+};
+
+// get all attendance related count
+exports.attendanceCounts = async (req, res) => {
+  try {
+    const month = req.params.month;
+    const currentYear = new Date().getFullYear();
+
+    let attendanceData;
+
+    if (month === 'All') {
+      // Aggregate attendance data for all dates
+      attendanceData = await AttendanceModel.aggregate([
+        {
+          $match: {
+            createdAt: { $type: 'date' }, // Ensure `createdAt` is of type date
+          },
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            attendedDays: {
+              $sum: {
+                $cond: [{ $gt: ['$OfficeWorking', '0'] }, 1, 0],
+              },
+            },
+            absentDays: {
+              $sum: {
+                $cond: [{ $eq: ['$OfficeWorking', '0'] }, 1, 0],
+              },
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalDays: { $sum: 1 },
+            totalAttendedDays: { $sum: '$attendedDays' },
+            totalAbsentDays: { $sum: '$absentDays' },
+          },
+        },
+      ]);
+    } else {
+      // Calculate the start and end dates for the specified month
+      const startDate = new Date(`${currentYear}-${month}-01T00:00:00.000Z`);
+      const endDate = new Date(
+        currentYear,
+        parseInt(month),
+        0,
+        23,
+        59,
+        59,
+        999
+      );
+
+      // Aggregate attendance data for the specified month
+      attendanceData = await AttendanceModel.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startDate, $lte: endDate },
+          },
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            attendedDays: {
+              $sum: {
+                $cond: [{ $gt: ['$OfficeWorking', '0'] }, 1, 0],
+              },
+            },
+            absentDays: {
+              $sum: {
+                $cond: [{ $eq: ['$OfficeWorking', '0'] }, 1, 0],
+              },
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalDays: { $sum: 1 },
+            totalAttendedDays: { $sum: '$attendedDays' },
+            totalAbsentDays: { $sum: '$absentDays' },
+          },
+        },
+      ]);
+    }
+
+    // Extract the results
+    const result = attendanceData[0] || {
+      totalDays: 0,
+      totalAttendedDays: 0,
+      totalAbsentDays: 0,
+    };
+
+    console.log('Aggregated Data:', result);
+    res.status(200).json(result);
+  } catch (error) {
+    // Handle any errors that occurred
+    res.status(500).json({ message: 'Error retrieving user counts', error });
   }
 };
