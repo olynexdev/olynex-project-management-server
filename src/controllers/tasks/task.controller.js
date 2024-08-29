@@ -102,6 +102,8 @@ exports.getTask = async (req, res) => {
 
 exports.searchTask = async (req, res) => {
   const { search } = req.query;
+  const userRole = req.query.role; // users designation
+  const userId = req.query.userId;
 
   if (!search) {
     return res.status(400).json({ message: 'Search query is required' });
@@ -112,21 +114,44 @@ exports.searchTask = async (req, res) => {
     const regex = new RegExp(search, 'i'); // Case-insensitive partial match
     const query = {};
 
+    // Define the base query for tasks
     if (!isNaN(searchNumber)) {
-      // Adjust range logic for partial number match
-      const lowerBound = searchNumber * Math.pow(10, 4 - search.length); // Adjust to create a range
+      const lowerBound = searchNumber * Math.pow(10, 4 - search.length);
       const upperBound = lowerBound + Math.pow(10, 4 - search.length);
 
       query.$or = [
-        { taskId: { $gte: lowerBound, $lt: upperBound } }, // Range-based search for numeric taskId
-        { title: { $regex: regex } }, // Partial match on title
-        { description: { $regex: regex } }, // Partial match on description
+        { taskId: { $gte: lowerBound, $lt: upperBound } },
+        { title: { $regex: regex } },
+        { description: { $regex: regex } },
       ];
     } else {
       query.$or = [
-        { title: { $regex: regex } }, // Partial match on title
-        { description: { $regex: regex } }, // Partial match on description
+        { title: { $regex: regex } },
+        { description: { $regex: regex } },
       ];
+    }
+
+    // Add role-based filtering
+    switch (userRole) {
+      case 'employee':
+        query['taskReceiver.userId'] = userId; // Employees see only their tasks
+        break;
+      case 'project_manager':
+      case 'mockup':
+      case 'seo':
+        query.approvalChain = {
+          $elemMatch: {
+            userId: userId,
+            designation: { $in: ['project_manager', 'mockup', 'seo'] }, // few Employees see only their tasks by designation
+          },
+        };
+        break;
+      case 'co_ordinator':
+      case 'ceo':
+        // Coordinators and CEOs see all tasks
+        break;
+      default:
+        return res.status(403).json({ message: 'Unauthorized role' });
     }
 
     const tasks = await TasksModel.find(query).limit(4); // Limit to 4 results
