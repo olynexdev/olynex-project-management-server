@@ -53,7 +53,7 @@ exports.getRunningTask = async (req, res) => {
       $or: [
         {
           'taskReceiver.userId': userId,
-          status: { $in: ['progress', 'review'] },
+          status: { $in: ['progress'] },
         },
         // return data when math aprovalChain userid
         {
