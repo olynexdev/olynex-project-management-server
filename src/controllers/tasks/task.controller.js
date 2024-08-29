@@ -43,7 +43,6 @@ exports.getTasks = async (req, res) => {
   }
 };
 
-
 // get running task
 exports.getRunningTask = async (req, res) => {
   try {
@@ -98,5 +97,41 @@ exports.getTask = async (req, res) => {
   } catch (error) {
     // Handle any errors that occurred
     res.status(500).json({ message: 'Error retrieving task', error });
+  }
+};
+
+exports.searchTask = async (req, res) => {
+  const { search } = req.query;
+
+  if (!search) {
+    return res.status(400).json({ message: 'Search query is required' });
+  }
+
+  try {
+    const searchNumber = Number(search);
+    const regex = new RegExp(search, 'i'); // Case-insensitive partial match
+    const query = {};
+
+    if (!isNaN(searchNumber)) {
+      // Adjust range logic for partial number match
+      const lowerBound = searchNumber * Math.pow(10, 4 - search.length); // Adjust to create a range
+      const upperBound = lowerBound + Math.pow(10, 4 - search.length);
+
+      query.$or = [
+        { taskId: { $gte: lowerBound, $lt: upperBound } }, // Range-based search for numeric taskId
+        { title: { $regex: regex } }, // Partial match on title
+        { description: { $regex: regex } }, // Partial match on description
+      ];
+    } else {
+      query.$or = [
+        { title: { $regex: regex } }, // Partial match on title
+        { description: { $regex: regex } }, // Partial match on description
+      ];
+    }
+
+    const tasks = await TasksModel.find(query).limit(4); // Limit to 4 results
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching tasks' });
   }
 };
