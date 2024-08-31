@@ -39,7 +39,6 @@ const taskSchema = new mongoose.Schema(
     submitInfo: [
       {
         note: { type: String },
-        fileUrl: { type: String },
         uploadedBy: { type: String },
         uploadDate: { type: String },
       },
