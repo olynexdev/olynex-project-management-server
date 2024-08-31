@@ -4,6 +4,7 @@ const {
   getTasks,
   getTask,
   getRunningTask,
+  searchTask,
 } = require('../controllers/tasks/task.controller');
 const {
   employeeAcceptTask,
@@ -56,5 +57,6 @@ router.put('/seo-accept-task/:id', seoAcceptTask);
 // delivery team related
 router.put('/delivery-member-uploaded-task/:id', deliveryTeamUploadTask);
 router.get('/get-tasks-counts/:month', taskCount);
+router.get('/search-tasks', searchTask);
 
 module.exports = router;
