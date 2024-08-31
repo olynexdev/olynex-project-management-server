@@ -14,8 +14,8 @@ async function initializeZKLib() {
     setInterval(async () => {
       try {
         const logs = await zkInstance.getAttendances();
-        const user = await zkInstance.getUsers()
-        console.log(user);
+        // const user = await zkInstance.getUsers()
+        // console.log(user);
         if (logs && Array.isArray(logs.data)) {
 
 
