@@ -3,6 +3,7 @@ const socketIO = require('socket.io');
 const app = require('./app');
 const initializeZKLib = require('./services/zklibInstance');
 const scheduleAttendanceCheck = require('./services/postAbsent.corn');
+const schedulePendingTaskCheck = require('./services/postPendingTaskNotification.corn');
 
 const PORT = process.env.PORT || 5000;
 
@@ -39,6 +40,7 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   initializeZKLib();
   scheduleAttendanceCheck();
+  schedulePendingTaskCheck(io);
 });
 
 module.exports = { io };
