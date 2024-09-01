@@ -198,7 +198,7 @@ exports.postAbsentAttendance = async (req, res) => {
             date: moment().format('YYYY-MM-DD'),
             inGoing: null,
             outGoing: null,
-            OfficeWorking: 'Absent',
+            OfficeWorking: '0',
             note: '',
           });
           await newAttendance.save(); // Save the absent record to the database
