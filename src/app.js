@@ -15,7 +15,8 @@ const notificationRoutes = require('./routes/notification.routes');
 const attendenceRoutes = require('./routes/attendence.routes.js');
 const advancePaymentRoutes = require('./routes/advancePayment.routes.js');
 const paymentHistoryRoutes = require("./routes/paymentHIstory.routes.js");
-const leaveRequestRoutes = require("./routes/leaveRequest.routes.js")
+const leaveRequestRoutes = require("./routes/leaveRequest.routes.js");
+const taskMarketPlaceRoutes = require("./routes/taskMarketPlace.routes.js")
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/v1', attendenceRoutes); // attendence routes
 app.use('/api/v1', advancePaymentRoutes); // advance payment routes
 app.use("/api/v1", paymentHistoryRoutes)
 app.use("/api/v1", leaveRequestRoutes)
+app.use("/api/v1", taskMarketPlaceRoutes)
 
 // Error handling middleware
 const errorHandler = require('./middlewares/errorHandler');
