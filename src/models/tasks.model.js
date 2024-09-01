@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema(
   {
@@ -9,6 +9,7 @@ const taskSchema = new mongoose.Schema(
     description: { type: String, required: true },
     taskStartDate: { type: String, required: true },
     file_types: [],
+    keywords: { type: String, required: true },
     taskDeadline: { type: String, required: true },
     status: { type: String, required: true },
     taskTimer: { type: String },
@@ -33,7 +34,7 @@ const taskSchema = new mongoose.Schema(
         name: { type: String },
         status: { type: String },
         date: { type: Date, default: null },
-        comment: { type: String, default: "" },
+        comment: { type: String, default: '' },
       },
     ],
     submitInfo: [
@@ -53,23 +54,21 @@ const taskSchema = new mongoose.Schema(
       },
     ],
     uploadInfo: {
-      
-        note: { type: String },
-        userId: { type: Number },
-        name: { type: String },
-        marketPlaces: Array,
-        uploadDate: { type: String },
-      
+      note: { type: String },
+      userId: { type: Number },
+      name: { type: String },
+      marketPlaces: Array,
+      uploadDate: { type: String },
     },
   },
   { timestamps: true }
 );
 
 // Default empty array for approvalChain and submitInfo
-taskSchema.path("approvalChain").default([]);
-taskSchema.path("submitInfo").default([]);
-taskSchema.path("rejectInfo").default([]);
+taskSchema.path('approvalChain').default([]);
+taskSchema.path('submitInfo').default([]);
+taskSchema.path('rejectInfo').default([]);
 
-const TaskModel = mongoose.model("Tasks", taskSchema);
+const TaskModel = mongoose.model('Tasks', taskSchema);
 
 module.exports = TaskModel;

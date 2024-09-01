@@ -1,4 +1,5 @@
 const TasksModel = require('../../models/tasks.model');
+const UserModel = require('../../models/users.model');
 exports.addTask = async (req, res) => {
   const body = req.body; // req to frontend
   try {
@@ -110,8 +111,37 @@ exports.searchTask = async (req, res) => {
   }
 
   try {
-    const searchNumber = Number(search);
     const regex = new RegExp(search, 'i'); // Case-insensitive partial match
+    const searchNumber = Number(search);
+
+    if (userRole === 'hr') {
+      const users = await UserModel.aggregate([
+        {
+          $match: {
+            $expr: {
+              $or: [
+                {
+                  $regexMatch: {
+                    input: { $toString: '$userId' }, // Converting userId to string for regex matching
+                    regex: regex,
+                  },
+                },
+                {
+                  $regexMatch: {
+                    input: '$fullName',
+                    regex: regex,
+                  },
+                },
+              ],
+            },
+          },
+        },
+        { $sort: { createdAt: -1 } }, // Sort by createdAt in descending order
+        { $limit: 4 }, // Limit to 4 results
+      ]);
+      return res.json(users);
+    }
+
     const query = {};
 
     // Define the base query for tasks
@@ -154,7 +184,9 @@ exports.searchTask = async (req, res) => {
         return res.status(403).json({ message: 'Unauthorized role' });
     }
 
-    const tasks = await TasksModel.find(query).limit(4); // Limit to 4 results
+    const tasks = await TasksModel.find(query)
+      .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+      .limit(4); // Limit to 4 results
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching tasks' });
