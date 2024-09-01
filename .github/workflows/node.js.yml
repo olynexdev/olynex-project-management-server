@@ -11,34 +11,31 @@ jobs:
     strategy:
       matrix:
         node-version: [22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Install Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
 
-    # Install Yarn
     - name: Install Yarn
       run: npm install -g yarn
 
-    # Install dependencies using Yarn
+    - name: Check Yarn Version
+      run: yarn --version
+
     - name: Install Dependencies
       run: yarn install
 
-    # Build your project (if you have a build step)
     - name: Build
       run: yarn build
 
-    # Run tests (if you have tests)
     - name: Run Tests
       run: yarn test
 
-    # Example of setting environment variables
     - name: Setup Environment
       run: |
         touch .env
