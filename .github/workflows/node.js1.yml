@@ -6,7 +6,6 @@ on:
 
 jobs:
   build:
-
     runs-on: self-hosted
 
     strategy:
@@ -15,21 +14,29 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Install Node.js ${{ matrix.node-version }}
+
+    - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
-    
+
     - name: Install Yarn
       run: npm install -g yarn
-    
+
+    - name: Check Yarn Version
+      run: yarn --version
+
     - name: Install Dependencies
-      run: yarn install --frozen-lockfile
-    
-    - run: |
+      run: yarn install
+
+    - name: Build
+      run: yarn build
+
+    - name: Run Tests
+      run: yarn test
+
+    - name: Setup Environment
+      run: |
         touch .env
         echo "${{ secrets.PROD_ENV_FILE }}" > .env
-    
-    # Add your build, test, or deploy steps here
