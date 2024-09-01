@@ -11,6 +11,10 @@ exports.postLeaveRequest = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5cb42ee61e789cd4f8276e5c93e53081c03dd9cc
 exports.getLeaveRequests = async (req, res) => {
   const { month, page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
