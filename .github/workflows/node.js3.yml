@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [20.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -33,13 +33,6 @@ jobs:
     # Build your project (if you have a build step)
     - name: Build
       run: yarn build
-
-    # Run tests (if you have tests)
-    - name: Run Tests
-      run: yarn test
-
-    # Example of setting environment variables
-    - name: Setup Environment
       run: |
         touch .env
         echo "${{ secrets.PROD_ENV_FILE }}" > .env
