@@ -44,7 +44,7 @@ exports.getProducts = async (req, res) => {
     // find product with pagination query
     const products = await ProductListingModel.find(query)
       .skip(skip)
-      .limit(limit);
+      .limit(limit).sort({createdAt: -1});
 
     res.status(201).send({ products, totalPages });
   } catch (err) {

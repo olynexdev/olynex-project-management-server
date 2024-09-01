@@ -60,7 +60,7 @@ async function initializeZKLib() {
                   outGoing: recordTime.isAfter(moment('15:00', 'HH:mm'))
                     ? log.recordTime
                     : null,
-                  OfficeWorking: "pending",
+                  OfficeWorking: "00",
                   date: recordTime.format("YYYY-MM-DD"),
                   note: ""
                 });
