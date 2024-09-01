@@ -14,6 +14,8 @@ async function initializeZKLib() {
     setInterval(async () => {
       try {
         const logs = await zkInstance.getAttendances();
+        // const user = await zkInstance.getUsers()
+        // console.log(user);
         if (logs && Array.isArray(logs.data)) {
 
 
@@ -58,7 +60,7 @@ async function initializeZKLib() {
                   outGoing: recordTime.isAfter(moment('15:00', 'HH:mm'))
                     ? log.recordTime
                     : null,
-                  OfficeWorking: "pending",
+                  OfficeWorking: "00",
                   date: recordTime.format("YYYY-MM-DD"),
                   note: ""
                 });
