@@ -6,7 +6,6 @@ on:
 
 jobs:
   build:
-
     runs-on: self-hosted
 
     strategy:
@@ -23,10 +22,24 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
 
-    - run: yarn install
+    # Install Yarn
+    - name: Install Yarn
+      run: npm install -g yarn
 
-    - run: |
-          touch .env
-          echo "${{ secrets.PROD_ENV_FILE }}" > .env
+    # Install dependencies using Yarn
+    - name: Install Dependencies
+      run: yarn install
 
-    # Add any additional steps you need here, like building or running tests
+    # Build your project (if you have a build step)
+    - name: Build
+      run: yarn build
+
+    # Run tests (if you have tests)
+    - name: Run Tests
+      run: yarn test
+
+    # Example of setting environment variables
+    - name: Setup Environment
+      run: |
+        touch .env
+        echo "${{ secrets.PROD_ENV_FILE }}" > .env
