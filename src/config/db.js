@@ -4,16 +4,17 @@ const dotenv = require('dotenv');
 // Load environment variables from .env file
 dotenv.config();
 
+const URL = "mongodb+srv://olynex-management:L7K0v0iNNDXC8Jqt@cluster0.fzxjbem.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 // MongoDB connection function
 const connectDB = async () => {
   try {
     // Check if MONGO_URI is defined
-    if (!process.env.MONGO_URI) {
+    if (!URL) {
       throw new Error('MONGO_URI is not defined in the environment variables');
     }
 
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI, {
+    await mongoose.connect(URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       dbName: 'olynex-managements' // Database name
