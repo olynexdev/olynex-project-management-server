@@ -13,8 +13,15 @@ const schedulePendingTaskCheck = io => {
 
       // Find tasks where the status is still pending
       const pendingTasks = await TaskModel.find({
-        'approvalChain.status': 'pending',
+        approvalChain: {
+          $elemMatch: {
+            status: 'pending',
+            designation: 'employee',
+          },
+        },
       });
+
+      console.log(nextNotificationTimes);
 
       // Iterate over each pending task
       for (const task of pendingTasks) {
@@ -44,6 +51,7 @@ const schedulePendingTaskCheck = io => {
               text: `${findEmployee.name} has not accepted the task ${task.taskId} yet!`,
               isRead: false,
             };
+            console.log(findEmployee, notificationInfo);
 
             // Save the notification to the database
             const notification = new NotificationModel(notificationInfo);
