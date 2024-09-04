@@ -6,12 +6,17 @@ const UserModel = require('../models/users.model');
 // In-memory store for tracking next notification times
 const nextNotificationTimes = {};
 
+// Schedule a cron job to run every minute
 const schedulePendingTaskCheck = io => {
   cron.schedule('* * * * *', async () => {
-    try {
-      const intervalMillis = 10 * 60000; // 10 minutes
+    const intervalMillis = 10 * 60000; // 10 minutes
 
-      // Find tasks where the status is still pending
+    // Prevent overlapping executions
+    if (schedulePendingTaskCheck.lock) return;
+    schedulePendingTaskCheck.lock = true;
+
+    try {
+      // Find tasks with pending status in the approval chain
       const pendingTasks = await TaskModel.find({
         approvalChain: {
           $elemMatch: {
@@ -21,18 +26,20 @@ const schedulePendingTaskCheck = io => {
         },
       });
 
-      console.log(nextNotificationTimes);
-
-      // Iterate over each pending task
+      // Process each pending task
       for (const task of pendingTasks) {
         const createdAt = new Date(task.createdAt).getTime();
         const now = Date.now();
         const taskId = task._id.toString();
 
-        // Calculation of next notification time for the task
-        const nextNotificationTime =
-          nextNotificationTimes[taskId] || createdAt + intervalMillis;
+        // Initialize next notification time if not set
+        if (!nextNotificationTimes[taskId]) {
+          nextNotificationTimes[taskId] = createdAt + intervalMillis;
+        }
 
+        const nextNotificationTime = nextNotificationTimes[taskId];
+
+        // Send notification if the current time exceeds the next notification time
         if (now >= nextNotificationTime) {
           const findEmployee = task.approvalChain.find(
             user => user.designation === 'employee'
@@ -42,7 +49,7 @@ const schedulePendingTaskCheck = io => {
           });
 
           if (findEmployee) {
-            // Prepare the notification info
+            // Create notification info
             const notificationInfo = {
               taskId: task._id,
               senderId: findEmployee.userId,
@@ -51,31 +58,29 @@ const schedulePendingTaskCheck = io => {
               text: `${findEmployee.name} has not accepted the task ${task.taskId} yet!`,
               isRead: false,
             };
-            console.log(findEmployee, notificationInfo);
 
-            // Save the notification to the database
+            // Save notification to database
             const notification = new NotificationModel(notificationInfo);
             await notification.save();
 
-            // Emit the notification using Socket.IO
+            // Emit notification via Socket.IO
             if (io) {
               io.to(notificationInfo.receiverId).emit(
                 'receiveNotification',
                 notificationInfo
               );
-              console.log('Notification sent:', notificationInfo);
-            } else {
-              console.error('Socket.io instance is not defined.');
             }
 
-            // Update the next notification time
-            nextNotificationTimes[taskId] =
-              nextNotificationTime + intervalMillis;
+            // Update next notification time
+            nextNotificationTimes[taskId] = now + intervalMillis;
           }
         }
       }
     } catch (error) {
       console.error('Error running cron job for task notifications:', error);
+    } finally {
+      // Release the lock
+      schedulePendingTaskCheck.lock = false;
     }
   });
 };
