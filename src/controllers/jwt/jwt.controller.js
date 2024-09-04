@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+  secure: process.env.NODE_ENV === 'production' && process.env.USE_HTTPS === 'true',
+  sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'strict',
 };
 
 exports.PostJwt = async (req, res) => {
@@ -16,8 +16,6 @@ exports.PostJwt = async (req, res) => {
 };
 
 exports.RemoveJwt = async (req, res) => {
-  const user = req.body;
-  console.log('logging out', user);
   res
     .clearCookie('token', { ...cookieOptions, maxAge: 0 })
     .send({ success: true });
