@@ -1,7 +1,6 @@
 const TasksModel = require('../../models/tasks.model');
 const UserModel = require('../../models/users.model');
 
-
 exports.addTask = async (req, res) => {
   const body = req.body; // req to frontend
   try {
@@ -171,10 +170,13 @@ exports.searchTask = async (req, res) => {
       case 'project_manager':
       case 'mockup':
       case 'seo':
+      case 'delivery':
         query.approvalChain = {
           $elemMatch: {
             userId: userId,
-            designation: { $in: ['project_manager', 'mockup', 'seo'] }, // few Employees see only their tasks by designation
+            designation: {
+              $in: ['project_manager', 'mockup', 'seo', 'delivery'],
+            }, // few Employees see only their tasks by designation
           },
         };
         break;

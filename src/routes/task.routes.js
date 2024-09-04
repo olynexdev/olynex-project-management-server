@@ -27,36 +27,88 @@ const {
   deliveryTeamUploadTask,
 } = require('../controllers/tasks/deliveryTeamTask.controller');
 const { taskCount } = require('../controllers/tasks/taskCount.controller');
+const verifyToken = require('../middlewares/verifyToken');
+const verifyTaskAccess = require('../middlewares/verifyTaskAccess');
 
 const router = express.Router();
 
-router.post('/post-task', addTask); // add new task
-router.get('/get-tasks', getTasks); // get all task
-router.get('/get-task/:id', getTask); // get an task
-router.get('/get-running-task/:userId', getRunningTask); // get running task
+router.post('/post-task', verifyToken, addTask); // add new task
+router.get('/get-tasks', verifyToken, getTasks); // get all task
+router.get('/get-task/:id', verifyToken, verifyTaskAccess, getTask); // get an task
+router.get('/get-running-task/:userId', verifyToken, getRunningTask); // get running task
 
 // employee related
-router.put('/employee-accept-task/:id', employeeAcceptTask);
-router.put('/employee-submit-task/:id', employeeSubmitTask);
+router.put(
+  '/employee-accept-task/:id',
+  verifyToken,
+  verifyTaskAccess,
+  employeeAcceptTask
+);
+router.put(
+  '/employee-submit-task/:id',
+  verifyToken,
+  verifyTaskAccess,
+  employeeSubmitTask
+);
 
 // ceo related
-router.put('/ceo-accept-task/:id', ceoAcceptTask);
-router.put('/ceo-reject-task/:id', ceoRejectTask);
-router.put('/ceo-reject-mockup/:id', ceoRejectMockup);
+router.put(
+  '/ceo-accept-task/:id',
+  verifyToken,
+  verifyTaskAccess,
+  ceoAcceptTask
+);
+router.put(
+  '/ceo-reject-task/:id',
+  verifyToken,
+  verifyTaskAccess,
+  ceoRejectTask
+);
+router.put(
+  '/ceo-reject-mockup/:id',
+  verifyToken,
+  verifyTaskAccess,
+  ceoRejectMockup
+);
 
 // project manager related
-router.put('/project-manager-accept-task/:id', projectManagerAcceptTask);
-router.put('/project-manager-rejected-task/:id', projectManagerRejected);
+router.put(
+  '/project-manager-accept-task/:id',
+  verifyToken,
+  verifyTaskAccess,
+  projectManagerAcceptTask
+);
+router.put(
+  '/project-manager-rejected-task/:id',
+  verifyToken,
+  verifyTaskAccess,
+  projectManagerRejected
+);
 
 // mockup related
-router.put('/mockup-confirm-task/:id', mockupConfirmTask);
+router.put(
+  '/mockup-confirm-task/:id',
+  verifyToken,
+  verifyTaskAccess,
+  mockupConfirmTask
+);
 
 // seo related
-router.put('/seo-accept-task/:id', seoAcceptTask);
+router.put(
+  '/seo-accept-task/:id',
+  verifyToken,
+  verifyTaskAccess,
+  seoAcceptTask
+);
 
 // delivery team related
-router.put('/delivery-member-uploaded-task/:id', deliveryTeamUploadTask);
-router.get('/get-tasks-counts/:month', taskCount);
-router.get('/search-tasks', searchTask);
+router.put(
+  '/delivery-member-uploaded-task/:id',
+  verifyToken,
+  verifyTaskAccess,
+  deliveryTeamUploadTask
+);
+router.get('/get-tasks-counts/:month', verifyToken, taskCount);
+router.get('/search-tasks', verifyToken, searchTask);
 
 module.exports = router;
