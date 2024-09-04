@@ -2,9 +2,10 @@ const jwt = require('jsonwebtoken');
 
 const cookieOptions = {
   httpOnly: true,
-  // secure: false,
-  // sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'strict',
+  secure: false, // Temporarily set to false
+  sameSite: 'lax', // Change to 'lax' for testing
 };
+
 
 exports.PostJwt = async (req, res) => {
   const user = req.body;
