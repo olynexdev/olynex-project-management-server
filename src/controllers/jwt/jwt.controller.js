@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production' && process.env.USE_HTTPS === 'true',
+  secure: false,
   sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'strict',
 };
 
