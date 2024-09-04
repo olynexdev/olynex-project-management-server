@@ -8,15 +8,17 @@ const {
   getAttendanceWithUserId,
   attendanceCounts,
 } = require('../controllers/addendence/attendence.controller');
+const verifyToken = require('../middlewares/verifyToken');
+const verifyHr = require('../middlewares/verifyHr');
 const router = express.Router();
 
 // attendence related routes
-router.get('/get-attendence', getAllAttendances);
-router.delete('/delete-all-attendance', deleteAllAttendance);
-router.post('/post-attendance', postAttendance);
-router.patch('/update-attendance/:id', updateAttendance);
-router.patch('/edit-attendance/:id', editAttendance);
-router.get('/get-attendance-by-user-id', getAttendanceWithUserId);
-router.get('/get-attendance-count/:month', attendanceCounts);
+router.get('/get-attendence', verifyToken, verifyHr, getAllAttendances);
+router.delete('/delete-all-attendance', verifyToken, deleteAllAttendance);
+router.post('/post-attendance', verifyToken, postAttendance);
+router.patch('/update-attendance/:id', verifyToken, updateAttendance);
+router.patch('/edit-attendance/:id', verifyToken, editAttendance);
+router.get('/get-attendance-by-user-id', verifyToken, getAttendanceWithUserId);
+router.get('/get-attendance-count/:month', verifyToken, attendanceCounts);
 
 module.exports = router;
