@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const notificationSchema = new mongoose.Schema(
   {
     taskId: { type: String },
+    taskMainId: { type: Number },
     receiverId: { type: Number, required: true },
     senderId: { type: Number, required: true },
     senderProfile: { type: String, require: true },

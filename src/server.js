@@ -1,5 +1,6 @@
 const http = require('http');
 const socketIO = require('socket.io');
+require('dotenv').config();
 const app = require('./app');
 const initializeZKLib = require('./services/zklibInstance');
 const scheduleAttendanceCheck = require('./services/postAbsent.corn');
@@ -11,7 +12,8 @@ const server = http.createServer(app);
 const io = socketIO(server, {
   pingTimeout: 60000,
   cors: {
-    origin: ['http://localhost:5173'], // Allow the frontend to connect
+    origin: ['http://localhost:5173'],
+    credentials: true, // Allow the frontend to connect
   },
 });
 
