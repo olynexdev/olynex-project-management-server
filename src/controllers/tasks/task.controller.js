@@ -71,7 +71,7 @@ exports.getRunningTask = async (req, res) => {
       .exec(); // Execute the query
 
     if (!task) {
-      return res.status(404).json({
+      return res.json({
         success: false,
         message: 'No running task found for this employee',
       });

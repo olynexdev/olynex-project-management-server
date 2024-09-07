@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema(
   {
-    taskId: { type: Number, required: true , unique: true },
+    taskId: { type: Number, required: true, unique: true },
     title: { type: String, required: true },
     category: { type: String, required: true },
     department: { type: String, required: true },
@@ -13,6 +13,7 @@ const taskSchema = new mongoose.Schema(
     taskDeadline: { type: String, required: true },
     status: { type: String, required: true },
     taskTimer: { type: String },
+    starPoint: { type: Number },
     taskResource: {
       url: { type: String, required: true },
       view: { type: Boolean, required: false },

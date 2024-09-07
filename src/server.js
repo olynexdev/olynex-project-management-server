@@ -1,19 +1,31 @@
-const http = require('http');
+const https = require('https');
 const socketIO = require('socket.io');
 require('dotenv').config();
 const app = require('./app');
+const path = require('path');
+const fs = require('fs');
 const initializeZKLib = require('./services/zklibInstance');
 const scheduleAttendanceCheck = require('./services/postAbsent.corn');
 const schedulePendingTaskCheck = require('./services/postPendingTaskNotification.corn');
 
 const PORT = process.env.PORT || 5000;
 
-const server = http.createServer(app);
+const keyPath = path.join(__dirname, 'cert', 'server.key');
+const certPath = path.join(__dirname, 'cert', 'server.crt');
+
+const server = https.createServer(
+  {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath),
+  },
+  app
+);
+
 const io = socketIO(server, {
   pingTimeout: 60000,
   cors: {
     origin: ['http://localhost:5173'],
-    credentials: true, // Allow the frontend to connect
+    credentials: true,
   },
 });
 
