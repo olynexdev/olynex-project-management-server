@@ -12,7 +12,6 @@ const verifyCoordinator = async (req, res, next) => {
     const user = await UserModel.findOne({ officeEmail: email });
 
     if (user && user?.personalInfo?.designation === 'co_ordinator') {
-      console.log(user.role);
       next();
     } else {
       return res.status(403).send({ message: 'Forbidden: Coordinator only' });
