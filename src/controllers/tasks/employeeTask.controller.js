@@ -1,4 +1,4 @@
-const TaskModel = require("../../models/tasks.model");
+const TaskModel = require('../../models/tasks.model');
 
 /**
  * Controller to handle employee's acceptance of a task.
@@ -25,16 +25,16 @@ exports.employeeAcceptTask = async (req, res) => {
     if (updatedTask.nModified === 0) {
       return res
         .status(404)
-        .json({ message: "Task not found or already has this status" });
+        .json({ message: 'Task not found or already has this status' });
     }
 
     // Respond with success
     return res
       .status(200)
-      .json({ message: "Task and approvalChain updated successfully" });
+      .json({ message: 'Task and approvalChain updated successfully' });
   } catch (error) {
     // Handle any errors
-    return res.status(500).json({ message: "Error updating task", error });
+    return res.status(500).json({ message: 'Error updating task', error });
   }
 };
 
@@ -52,37 +52,38 @@ exports.employeeSubmitTask = async (req, res) => {
       employeeStatus,
       ceoStatus,
       projectManagerStatus,
-      status
+      status,
+      starPoint,
     } = req.body;
 
     // Find the task by taskId
     const task = await TaskModel.findById(id);
 
     if (!task) {
-      return res.status(404).send({ message: "Task not found" });
+      return res.status(404).send({ message: 'Task not found' });
     }
 
-    
     // Update approvalChain if necessary
     if (approvalChainUpdate) {
       const ceoEntryExists = task.approvalChain.some(
-        (entry) => entry.designation === "ceo"
+        entry => entry.designation === 'ceo'
       );
 
       // Only push the new approvalChainUpdate if the CEO entry doesn't already exist
-      if (!ceoEntryExists || approvalChainUpdate.designation !== "ceo") {
+      if (!ceoEntryExists || approvalChainUpdate.designation !== 'ceo') {
         task.approvalChain.push(approvalChainUpdate);
       }
     }
 
-    if(task?.status !== "rejected_pm"){
-      task.status = status
+    if (task?.status !== 'rejected_pm') {
+      task.status = status;
+      task.starPoint = starPoint;
     }
 
     // Update coordinator comment
     if (coordinatorComment) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "co_ordinator" && !entry.comment) {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'co_ordinator' && !entry.comment) {
           entry.comment = coordinatorComment;
         }
       });
@@ -90,16 +91,16 @@ exports.employeeSubmitTask = async (req, res) => {
 
     // Update CEO status
     if (ceoStatus) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "ceo") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'ceo') {
           entry.status = ceoStatus;
         }
       });
     }
     // Update project manager status
     if (projectManagerStatus) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "project_manager") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'project_manager') {
           entry.status = projectManagerStatus;
         }
       });
@@ -107,8 +108,8 @@ exports.employeeSubmitTask = async (req, res) => {
 
     // Update employee status
     if (employeeStatus) {
-      task.approvalChain.forEach((entry) => {
-        if (entry.designation === "employee") {
+      task.approvalChain.forEach(entry => {
+        if (entry.designation === 'employee') {
           entry.status = employeeStatus;
         }
       });
@@ -117,7 +118,7 @@ exports.employeeSubmitTask = async (req, res) => {
     // Handle submitInfo for a specific designation (e.g., "ceo")
     if (submitInfo) {
       const existingSubmitInfo = task.submitInfo.find(
-        (info) => info.designation === submitInfo.designation
+        info => info.designation === submitInfo.designation
       );
 
       if (existingSubmitInfo) {
@@ -134,11 +135,11 @@ exports.employeeSubmitTask = async (req, res) => {
     await task.save();
 
     // Respond with success
-    return res.status(200).send({ message: "Task updated successfully", task });
+    return res.status(200).send({ message: 'Task updated successfully', task });
   } catch (err) {
     // Handle any errors
     return res
       .status(500)
-      .send({ message: "Failed to update task", error: err.message });
+      .send({ message: 'Failed to update task', error: err.message });
   }
 };

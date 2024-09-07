@@ -31,11 +31,16 @@ exports.addProduct = async (req, res) => {
 // get all products data with pagination and categories
 exports.getProducts = async (req, res) => {
   try {
-    const { page = 1, category = '' } = req.query; //
+    const { page, category = '' } = req.query; //
     const limit = 10; // page limit
     const skip = (page - 1) * limit; // page skip
 
     const query = category ? { category } : {};
+
+    if (page == 0) {
+      const products = await ProductListingModel.find().sort({ createdAt: -1 });
+      return res.status(201).send({ products, totalPages: 0 });
+    }
 
     // count page
     const totalProducts = await ProductListingModel.countDocuments(query);
@@ -44,7 +49,8 @@ exports.getProducts = async (req, res) => {
     // find product with pagination query
     const products = await ProductListingModel.find(query)
       .skip(skip)
-      .limit(limit).sort({createdAt: -1});
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     res.status(201).send({ products, totalPages });
   } catch (err) {

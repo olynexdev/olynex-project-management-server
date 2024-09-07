@@ -14,7 +14,6 @@ exports.addNotification = async (req, res) => {
 // Get notifications for a specific user
 exports.getNotification = async (req, res) => {
   const userId = req.params.id;
-  console.log(req.query.offset);
 
   const { offset = 0, limit = 10 } = req.query;
 

@@ -12,7 +12,6 @@ const verifyHr = async (req, res, next) => {
     const user = await UserModel.findOne({ officeEmail: email });
 
     if (user && user?.personalInfo?.designation === 'hr') {
-      console.log(user.role);
       next();
     } else {
       return res.status(403).send({ message: 'Forbidden: Hr only' });
