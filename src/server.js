@@ -24,7 +24,7 @@ const server = https.createServer(
 const io = socketIO(server, {
   pingTimeout: 60000,
   cors: {
-    origin: ['http://localhost:5173', "https://olynex.online/"],
+    origin: ['http://localhost:5173', "https://olynex.online"],
     credentials: true,
   },
 });
