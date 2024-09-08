@@ -37,6 +37,11 @@ const getAllTasksCount = async userId => {
     taskDeadline: { $lt: new Date() },
   });
 
+  const starCountSum = await TasksModel.aggregate([
+    { $match: filter },
+    { $group: { _id: null, totalStars: { $sum: '$starPoint' } } },
+  ]);
+
   return {
     totalTasksCount,
     completedTasksCount,
@@ -44,6 +49,7 @@ const getAllTasksCount = async userId => {
     inProgressTasksCount,
     reviewTasksCount,
     overdueTasksCount,
+    starCountSum: starCountSum[0]?.totalStars || 0,
   };
 };
 
@@ -107,6 +113,9 @@ const getTaskByDesignation = async (userId, designation, monthQuery) => {
           },
           { $count: 'rejected' },
         ],
+        starCountSum: [
+          { $group: { _id: null, totalStars: { $sum: '$starPoint' } } },
+        ],
       },
     },
   ]);
@@ -117,12 +126,15 @@ const getTaskByDesignation = async (userId, designation, monthQuery) => {
     designationTaskCountsData.accepted[0]?.accepted || 0;
   const pendingTasksCount = designationTaskCountsData.pending[0]?.pending || 0;
   const rejectedTasks = designationTaskCountsData.rejected[0]?.rejected || 0;
+  const starCountSum =
+    designationTaskCountsData.starCountSum[0]?.totalStars || 0;
 
   return {
     totalTasksCount,
     completedTasksCount,
     pendingTasksCount,
     rejectedTasks,
+    starCountSum,
   };
 };
 
@@ -185,6 +197,9 @@ const getAllTaskByDesignation = async (designation, userId) => {
           },
           { $count: 'rejected' },
         ],
+        starCountSum: [
+          { $group: { _id: null, totalStars: { $sum: '$starPoint' } } },
+        ],
       },
     },
   ]);
@@ -195,12 +210,15 @@ const getAllTaskByDesignation = async (designation, userId) => {
     designationTaskCountsData.accepted[0]?.accepted || 0;
   const pendingTasksCount = designationTaskCountsData.pending[0]?.pending || 0;
   const rejectedTasks = designationTaskCountsData.rejected[0]?.rejected || 0;
+  const starCountSum =
+    designationTaskCountsData.starCountSum[0]?.totalStars || 0;
 
   return {
     totalTasksCount,
     completedTasksCount,
     pendingTasksCount,
     rejectedTasks,
+    starCountSum,
   };
 };
 
@@ -278,6 +296,12 @@ exports.taskCount = async (req, res) => {
       taskDeadline: { $lt: new Date() },
     });
 
+    const starCountSum = await TasksModel.aggregate([
+      { $match: monthQuery },
+      { $group: { _id: null, totalStars: { $sum: '$starPoint' } } },
+    ]);
+    console.log(starCountSum);
+
     res.status(201).json({
       totalTasksCount,
       completedTasksCount,
@@ -285,6 +309,7 @@ exports.taskCount = async (req, res) => {
       inProgressTasksCount,
       reviewTasksCount,
       overdueTasksCount,
+      starCountSum: starCountSum[0]?.totalStars || 0,
     });
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving task counts', error });
