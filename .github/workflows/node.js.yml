@@ -1,0 +1,27 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # Set up Node.js environment with a specific version
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '[22.x]
+
+      - name: Run a one-line script
+        run: echo Hello, world!
+
+      - name: Run a multi-line script 
+        run: | 
+          touch .env
+          echo "${{ secrets.PROD_ENV_FILE }}" > .env

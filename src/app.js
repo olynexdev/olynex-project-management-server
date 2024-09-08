@@ -28,7 +28,7 @@ connectDB();
 // Middleware
 app.use(
   cors({
-    origin: ['http://localhost:1592', 'http://localhost:5173'],
+    origin: ['http://localhost:1592', 'http://localhost:5173', "https://olynex.online"],
     credentials: true,
   })
 );

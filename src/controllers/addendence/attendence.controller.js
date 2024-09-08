@@ -216,7 +216,6 @@ exports.postAbsentAttendance = async (req, res) => {
 
 exports.updateAttendance = async (req, res) => {
   const id = req.params.id;
-  console.log(id);
   try {
     const result = await AttendanceModel.updateOne(
       { _id: id },
@@ -231,7 +230,6 @@ exports.updateAttendance = async (req, res) => {
 exports.editAttendance = async (req, res) => {
   const id = req.params.id;
   const attendanceData = req.body;
-  console.log(id);
   try {
     const result = await AttendanceModel.updateOne(
       { _id: id },

@@ -14,6 +14,7 @@ const {
   getUserbyUserId,
 } = require('../controllers/users/getUser.controller');
 const verifyToken = require('../middlewares/verifyToken');
+const verifyUserDetailAccess = require('../middlewares/verifyUserDetailAccess');
 
 const router = express.Router();
 
@@ -26,7 +27,12 @@ router.patch('/update-user/:id', verifyToken, updateUser);
 router.get('/get-user', verifyToken, getUserwithEmail);
 router.get('/get-user-role/:email', verifyToken, getUserWithRole);
 router.get('/get-user/:id', verifyToken, getUserById);
-router.get('/get-user-by-user-id/:userId', verifyToken, getUserbyUserId);
+router.get(
+  '/get-user-by-user-id/:userId',
+  verifyToken,
+  verifyUserDetailAccess,
+  getUserbyUserId
+);
 router.get('/get-users-count/:month', verifyToken, usersCount);
 
 module.exports = router;
