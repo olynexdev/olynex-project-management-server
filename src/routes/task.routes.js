@@ -9,6 +9,7 @@ const {
 const {
   employeeAcceptTask,
   employeeSubmitTask,
+  getTasksImages,
 } = require('../controllers/tasks/employeeTask.controller');
 const {
   ceoAcceptTask,
@@ -29,7 +30,7 @@ const {
 const { taskCount } = require('../controllers/tasks/taskCount.controller');
 const verifyToken = require('../middlewares/verifyToken');
 const verifyTaskAccess = require('../middlewares/verifyTaskAccess');
-const { postImage } = require('../controllers/tasks/taskImageUploadController');
+const { postImage, upload } = require('../controllers/tasks/taskImageUploadController');
 
 const router = express.Router();
 
@@ -111,6 +112,7 @@ router.put(
 );
 router.get('/get-tasks-counts/:month', verifyToken, taskCount);
 router.get('/search-tasks', verifyToken, searchTask);
-router.post('/upload-images', postImage);
+router.post('/upload-images', upload.array("images"), postImage);
+router.get("/get-images", getTasksImages)
 
 module.exports = router;
