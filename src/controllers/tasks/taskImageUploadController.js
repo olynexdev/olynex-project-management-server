@@ -17,16 +17,17 @@ const upload = multer({ storage });
 console.log("upload", upload);
 
 // Route to handle image uploads
-(exports.postImage = upload.array('images')),
-  (req, res) => {
-    try {
-      const imageUrls = req.files.map(
-        file => `${req.protocol}://${req.get('host')}/uploads/${file.filename}`
-      );
-      console.log(imageUrls);
-      res.status(200).json({ imageUrls });
-    } catch (error) {
-      console.error('Image upload error:', error);
-      res.status(500).json({ message: 'Image upload failed' });
-    }
-  };
+const postImage = (req, res) => {
+  try {
+    const imageUrls = req.files.map(
+      file => `${req.protocol}://${req.get('host')}/uploads/${file.filename}`
+    );
+    console.log(imageUrls);
+    res.status(200).json({ imageUrls });
+  } catch (error) {
+    console.error('Image upload error:', error);
+    res.status(500).json({ message: 'Image upload failed' });
+  }
+};
+
+module.exports = { postImage };

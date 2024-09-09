@@ -111,6 +111,6 @@ router.put(
 );
 router.get('/get-tasks-counts/:month', verifyToken, taskCount);
 router.get('/search-tasks', verifyToken, searchTask);
-router.post('/upload-images', postImage);
+router.post('/upload-images', upload.array("images"), postImage);
 
 module.exports = router;
