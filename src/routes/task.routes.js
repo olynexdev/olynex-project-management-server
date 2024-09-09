@@ -9,6 +9,7 @@ const {
 const {
   employeeAcceptTask,
   employeeSubmitTask,
+  getTasksImages,
 } = require('../controllers/tasks/employeeTask.controller');
 const {
   ceoAcceptTask,
@@ -112,5 +113,6 @@ router.put(
 router.get('/get-tasks-counts/:month', verifyToken, taskCount);
 router.get('/search-tasks', verifyToken, searchTask);
 router.post('/upload-images', upload.array("images"), postImage);
+router.get("/get-images", getTasksImages)
 
 module.exports = router;
