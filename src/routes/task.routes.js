@@ -29,6 +29,7 @@ const {
 const { taskCount } = require('../controllers/tasks/taskCount.controller');
 const verifyToken = require('../middlewares/verifyToken');
 const verifyTaskAccess = require('../middlewares/verifyTaskAccess');
+const { postImage } = require('../controllers/tasks/taskImageUploadController');
 
 const router = express.Router();
 
@@ -110,5 +111,6 @@ router.put(
 );
 router.get('/get-tasks-counts/:month', verifyToken, taskCount);
 router.get('/search-tasks', verifyToken, searchTask);
+router.post('/upload-images', postImage);
 
 module.exports = router;
