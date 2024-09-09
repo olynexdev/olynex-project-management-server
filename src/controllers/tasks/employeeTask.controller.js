@@ -159,7 +159,7 @@ exports.employeeSubmitTask = async (req, res) => {
 };
 
 // get tasks images
-exports.getTasksImages = async (res, res) => {
+exports.getTasksImages = async (req, res) => {
   try {
     const result = await ProjectImagesModal.find();
     res.status(200).send(result);
@@ -169,3 +169,4 @@ exports.getTasksImages = async (res, res) => {
       .send({ message: `Project images get failed!: ${err?.message}` });
   }
 };
+
