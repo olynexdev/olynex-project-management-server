@@ -30,4 +30,4 @@ const postImage = (req, res) => {
   }
 };
 
-module.exports = { postImage };
+module.exports = { postImage, upload };

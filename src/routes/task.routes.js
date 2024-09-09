@@ -29,7 +29,7 @@ const {
 const { taskCount } = require('../controllers/tasks/taskCount.controller');
 const verifyToken = require('../middlewares/verifyToken');
 const verifyTaskAccess = require('../middlewares/verifyTaskAccess');
-const { postImage } = require('../controllers/tasks/taskImageUploadController');
+const { postImage, upload } = require('../controllers/tasks/taskImageUploadController');
 
 const router = express.Router();
 
