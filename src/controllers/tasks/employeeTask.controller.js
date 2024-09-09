@@ -160,13 +160,24 @@ exports.employeeSubmitTask = async (req, res) => {
 
 // get tasks images
 exports.getTasksImages = async (req, res) => {
+  const { taskId } = req.query;
+  // Check if taskId is provided
+  if (!taskId) {
+    return res.status(400).send({ message: 'taskId is required' });
+  }
   try {
-    const result = await ProjectImagesModal.find();
-    res.status(200).send(result);
+    // Fetch the images related to the taskId
+    const result = await ProjectImagesModal.findOne({ taskId });
+    if (!result) {
+      // Handle the case where no data is found
+      return res.status(404).send({ message: 'No images found for this taskId' });
+    }
+
+    // Respond with the found result
+    res.status(200).send({ result });
   } catch (err) {
-    res
-      .status(500)
-      .send({ message: `Project images get failed!: ${err?.message}` });
+    // Catch any errors during the process
+    res.status(500).send({ message: `Failed to retrieve project images: ${err.message}` });
   }
 };
 
