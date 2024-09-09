@@ -5,7 +5,7 @@ const path = require('path');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     console.log("cb", cb, file);
-    cb(null, '/home/binex/project-images'); // Save files to the "uploads" folder
+    cb(null, '/var/wwww/html/uploads'); // Save files to the "uploads" folder
   },
   filename: (req, file, cb) => {
     console.log("this is a file:",file);
@@ -20,7 +20,7 @@ console.log("upload", upload);
 const postImage = (req, res) => {
   try {
     const imageUrls = req.files.map(
-      file => `${req.protocol}://${req.hostname}/project-images/${file.filename}`
+      file => `${req.protocol}://${req.hostname}/uploads/${file.filename}`
     );
     console.log(imageUrls);
     res.status(200).json({ imageUrls });
