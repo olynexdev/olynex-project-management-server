@@ -19,6 +19,8 @@ const paymentHistoryRoutes = require('./routes/paymentHIstory.routes.js');
 const leaveRequestRoutes = require('./routes/leaveRequest.routes.js');
 const taskMarketPlaceRoutes = require('./routes/taskMarketPlace.routes.js');
 const jwtRoutes = require('./routes/jwt.routes.js');
+const colorSpaceRoutes = require("./routes/colorSpace.routes.js")
+const templateSizeRoutes = require("./routes/templateSize.routes.js")
 
 const app = express();
 
@@ -57,6 +59,8 @@ app.use('/api/v1', paymentHistoryRoutes);
 app.use('/api/v1', leaveRequestRoutes);
 app.use('/api/v1', taskMarketPlaceRoutes);
 app.use('/api/v1', jwtRoutes);
+app.use("/api/v1", colorSpaceRoutes)
+app.use("/api/v1", templateSizeRoutes)
 
 // Error handling middleware
 const errorHandler = require('./middlewares/errorHandler');
