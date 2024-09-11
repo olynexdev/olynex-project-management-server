@@ -62,7 +62,7 @@ app.use('/api/v1', paymentHistoryRoutes);
 app.use('/api/v1', leaveRequestRoutes);
 app.use('/api/v1', taskMarketPlaceRoutes);
 app.use('/api/v1', jwtRoutes);
-app.use('/api/v1', templateSizeRoutes);
+app.use('/api/v1', templateSizeRoutes); // template size routes
 
 // Error handling middleware
 const errorHandler = require('./middlewares/errorHandler');
