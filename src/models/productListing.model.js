@@ -18,6 +18,18 @@ const productListingSchema = new mongoose.Schema({
     type: [String],  
     required: true,
   },
+  template_size: {
+    type: [String],  
+    required: true,
+  },
+  color_space: {
+    type: String,
+    required: true,
+  },
+  number_of_pages: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
