@@ -1,12 +1,11 @@
-// src/services/cronJobs.js
 const cron = require('node-cron');
 const AddendenceModel = require('../models/attendence.model');
 const UserModel = require('../models/users.model');
 const moment = require('moment');
 
-// Schedule a job to run at 6 PM every day
+// Schedule a job to run at 6 PM every day except Fridays
 const scheduleAttendanceCheck = () => {
-  cron.schedule('0 15 * * *', async () => {
+  cron.schedule('0 15 * * 0-4,6-7', async () => {
     try {
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0); // Start of the day
@@ -35,7 +34,7 @@ const scheduleAttendanceCheck = () => {
             OfficeWorking: '0',
             inGoing: null,
             outGoing: null,
-            overTime:0,
+            overTime: 0,
           });
           console.log(`Employee ${employee.userId} marked as absent.`);
         }

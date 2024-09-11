@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const templateSizeSchema = new mongoose.Schema(
   {
-    size: {
+    templateSize: {
       type: String,
       required: true,
     },
