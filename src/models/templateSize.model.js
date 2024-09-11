@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const templateSizeSchema = new mongoose.Schema(
   {
-    size: {
-      type: [],
+    templateSize: {
+      type: String,
       required: true,
     },
   },
