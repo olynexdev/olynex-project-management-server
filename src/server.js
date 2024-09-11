@@ -32,6 +32,12 @@ const io = socketIO(server, {
 io.on('connection', socket => {
   console.log('A user connected:', socket.id);
 
+  // Use 'once' for events to avoid multiple event listener issues
+  socket.once('disconnect', () => {
+    console.log('A user disconnected:', socket.id);
+    socket.removeAllListeners(); // Clean up listeners
+  });
+
   // Handle user joining a room based on their ID
   socket.on('joinRoom', userId => {
     socket.join(userId);
@@ -41,12 +47,7 @@ io.on('connection', socket => {
   // Listen for notification events
   socket.on('sendNotification', data => {
     console.log('Notification data:', data);
-    // Emit the notification to the specific user by receiverId
     io.to(data.receiverId).emit('receiveNotification', data);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('A user disconnected:', socket.id);
   });
 });
 
