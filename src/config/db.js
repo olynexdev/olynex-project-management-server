@@ -1,30 +1,46 @@
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const logger = require("../utils/logger");
 
 // Load environment variables from .env file
 dotenv.config();
 
-const URL = "mongodb+srv://olynex-management:L7K0v0iNNDXC8Jqt@cluster0.fzxjbem.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-// MongoDB connection function
 const connectDB = async () => {
   try {
+    const mongoURI = process.env.MONGO_URI;
+
     // Check if MONGO_URI is defined
-    if (!URL) {
-      throw new Error('MONGO_URI is not defined in the environment variables');
+    if (!mongoURI) {
+      throw new Error("MONGO_URI is not defined in the environment variables");
     }
 
     // Connect to MongoDB
-    await mongoose.connect(URL, {
+    await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      dbName: 'olynex-managements' // Database name
+      // serverSelectionTimeoutMS: 30000,
+      dbName: "olynex-managements", // Database name
     });
 
-    console.log('MongoDB connected...');
+    logger.info("MongoDB connection established successfully");
   } catch (err) {
-    console.error('Error connecting to MongoDB:', err.message);
-    process.exit(1);
+    logger.error(`MongoDB connection error: ${err.message}`);
+    process.exit(1); // Exit the process if unable to connect
   }
+
+  // Handle disconnection
+  mongoose.connection.on("disconnected", () => {
+    logger.warn("MongoDB disconnected, trying to reconnect...");
+  });
+
+  mongoose.connection.on("reconnected", () => {
+    logger.info("MongoDB reconnected successfully");
+  });
+
+  mongoose.connection.on("error", (err) => {
+    logger.error(`MongoDB error: ${err.message}`);
+  });
 };
 
+// Export connectDB function
 module.exports = connectDB;

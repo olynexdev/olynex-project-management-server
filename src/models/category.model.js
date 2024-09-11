@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const categorySchema = new mongoose.Schema(
   {
     category: {
-      type: String,
-      required: true,
+      categoryName: { type: String, required: true },
+      categoryNumber: { type: Number, required: true },
     },
     department: {
       type: String,
@@ -16,5 +16,5 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
-const CategoryModel = mongoose.model("Category", categorySchema);
+const CategoryModel = mongoose.model('Category', categorySchema);
 module.exports = CategoryModel;
