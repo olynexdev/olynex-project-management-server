@@ -7,7 +7,6 @@ const storage = multer.diskStorage({
     cb(null, '/var/www/html/uploads'); // Save files to the "uploads" folder
   },
   filename: (req, file, cb) => {
-    console.log("this is a file:",file);
     cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to filename
   },
 });
