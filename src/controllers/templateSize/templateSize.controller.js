@@ -3,6 +3,7 @@ const templateSizeModel = require('../../models/templateSize.model');
 // post new template size data
 exports.addTemplateSize = async (req, res) => {
   const body = req.body; // req to frontend
+  console.log(body);
   try {
     const result = await templateSizeModel.create(body);
     res.status(201).send(result);
