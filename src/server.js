@@ -35,7 +35,6 @@ io.on('connection', socket => {
   // Use 'once' for events to avoid multiple event listener issues
   socket.once('disconnect', () => {
     console.log('A user disconnected:', socket.id);
-    socket.removeAllListeners(); // Clean up listeners
   });
 
   // Handle user joining a room based on their ID
