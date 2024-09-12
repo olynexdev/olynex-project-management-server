@@ -22,7 +22,8 @@ const server = https.createServer(
 );
 
 const io = socketIO(server, {
-  pingTimeout: 600000, // Set a high value, e.g., 10 minutes (600,000 ms)
+  // pingTimeout: 60000,
+  pingTimeout: 600000,  // Set a high value, e.g., 10 minutes (600,000 ms)
   pingInterval: 25000,
   cors: {
     origin: ['http://localhost:5173', 'https://olynex.online'],

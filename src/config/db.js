@@ -16,8 +16,8 @@ const connectDB = async () => {
 
     // Connect to MongoDB
     await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      // useNewUrlParser: true,
+      // useUnifiedTopology: true,
       // serverSelectionTimeoutMS: 30000,
       dbName: "olynex-managements", // Database name
     });
@@ -44,3 +44,34 @@ const connectDB = async () => {
 
 // Export connectDB function
 module.exports = connectDB;
+
+
+// const retry = require('async-retry');
+
+// async function connectWithRetry() {
+//     await retry(async () => {
+//         await client.connect();
+//     }, {
+//         retries: 5,
+//         minTimeout: 1000, // 1 second
+//         maxTimeout: 30000 // 30 seconds
+//     });
+// }
+
+
+
+// const { MongoClient } = require('mongodb');
+
+// const client = new MongoClient(uri, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//     serverSelectionTimeoutMS: 5000, // 5 seconds
+//     socketTimeoutMS: 45000, // 45 seconds
+// });
+
+
+// const client = new MongoClient(uri, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+//   poolSize: 10 // Number of connections in the pool
+// });
