@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const productListingSchema = new mongoose.Schema(
   {
@@ -25,6 +25,10 @@ const productListingSchema = new mongoose.Schema(
     },
     template_size: {
       type: [String],
+      required: true,
+    },
+    disclaimer: {
+      type: String,
       required: true,
     },
     template_category: {
@@ -68,7 +72,7 @@ const productListingSchema = new mongoose.Schema(
 );
 
 const ProductListingModel = mongoose.model(
-  'ProductListing',
+  "ProductListing",
   productListingSchema
 );
 
