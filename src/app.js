@@ -1,27 +1,13 @@
 // src/app.js
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const connectDB = require('./config/db');
-const departmentRoutes = require('./routes/department.routes.js');
-const marketPlaceRoutes = require('./routes/marketPlace.routes.js');
-const designationRoutes = require('./routes/designation.routes.js');
-const fileTypeRoutes = require('./routes/fileType.routes.js');
-const categoryRoutes = require('./routes/category.routes.js');
-const productsRoutes = require('./routes/productListing.routes.js');
-const userRoutes = require('./routes/user.routes.js');
-const taskRoutes = require('./routes/task.routes.js');
-const notificationRoutes = require('./routes/notification.routes');
-const attendenceRoutes = require('./routes/attendence.routes.js');
-const advancePaymentRoutes = require('./routes/advancePayment.routes.js');
-const paymentHistoryRoutes = require('./routes/paymentHIstory.routes.js');
-const leaveRequestRoutes = require('./routes/leaveRequest.routes.js');
-const taskMarketPlaceRoutes = require('./routes/taskMarketPlace.routes.js');
-const jwtRoutes = require('./routes/jwt.routes.js');
-const colorSpaceRoutes = require("./routes/colorSpace.routes.js")
-const templateSizeRoutes = require("./routes/templateSize.routes.js")
-const disclaimerRoutes = require("./routes/disclaimer.routes.js")
+const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const connectDB = require("./config/db");
+const errorHandler = require("./middlewares/errorHandler.js");
+const notFoundHandler = require("./middlewares/notFound.js");
+
+// Initialize the app
 const app = express();
 
 // Connect to database
@@ -31,46 +17,159 @@ connectDB();
 app.use(
   cors({
     origin: [
-      'http://localhost:1592',
-      'http://localhost:5173',
-      'https://olynex.online',
+      "http://localhost:1592",
+      "http://localhost:5173",
+      "https://olynex.online",
     ],
     credentials: true,
   })
 );
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
 
+// Route imports
+const routes = {
+  department: require("./routes/department.routes.js"),
+  marketPlace: require("./routes/marketPlace.routes.js"),
+  designation: require("./routes/designation.routes.js"),
+  fileType: require("./routes/fileType.routes.js"),
+  category: require("./routes/category.routes.js"),
+  product: require("./routes/productListing.routes.js"),
+  user: require("./routes/user.routes.js"),
+  task: require("./routes/task.routes.js"),
+  notification: require("./routes/notification.routes.js"),
+  attendance: require("./routes/attendence.routes.js"),
+  advancePayment: require("./routes/advancePayment.routes.js"),
+  paymentHistory: require("./routes/paymentHistory.routes.js"),
+  leaveRequest: require("./routes/leaveRequest.routes.js"),
+  taskMarketPlace: require("./routes/taskMarketPlace.routes.js"),
+  jwt: require("./routes/jwt.routes.js"),
+  colorSpace: require("./routes/colorSpace.routes.js"),
+  templateSize: require("./routes/templateSize.routes.js"),
+  disclaimer: require("./routes/disclaimer.routes.js"),
+};
+
+// Use routes - Modularized
+app.use("/api/v1", routes.department);
+app.use("/api/v1", routes.designation);
+app.use("/api/v1", routes.fileType);
+app.use("/api/v1", routes.category);
+app.use("/api/v1", routes.product);
+app.use("/api/v1", routes.user);
+app.use("/api/v1", routes.task);
+app.use("/api/v1", routes.notification);
+app.use("/api/v1", routes.marketPlace);
+app.use("/api/v1", routes.attendance);
+app.use("/api/v1", routes.advancePayment);
+app.use("/api/v1", routes.paymentHistory);
+app.use("/api/v1", routes.leaveRequest);
+app.use("/api/v1", routes.taskMarketPlace);
+app.use("/api/v1", routes.jwt);
+app.use("/api/v1", routes.colorSpace);
+app.use("/api/v1", routes.templateSize);
+app.use("/api/v1", routes.disclaimer);
+
 // Home route
-app.get('/', (req, res) => {
-  res.send('Olynex management server running!');
+app.get("/", (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>Server | Olynex</title>
+        <style>
+          body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+          }
+          h1 {
+            color: #0075EE;
+            font-size: 30px;
+            font-weight: bold;
+            text-align: center;
+          }
+          p {
+            color: gray;
+            font-size: 18px;
+            text-align: center;
+          }
+        </style>
+      </head>
+      <body>
+        <div>
+          <h1>Olynex Management Server Running...! 🏃‍➡️</h1>
+          <p>Please check your website.</p>
+        </div>
+      </body>
+    </html>
+  `);
 });
 
-//*All Routes with CRUD
-app.use('/api/v1/', departmentRoutes); // department routes
-app.use('/api/v1/', designationRoutes); // designation routes
-app.use('/api/v1/', fileTypeRoutes); // file type routes
-app.use('/api/v1/', categoryRoutes); // ategory routes
-app.use('/api/v1/', productsRoutes); // products routes
-app.use('/api/v1/', userRoutes); // user all routers
-app.use('/api/v1/', taskRoutes); // all task routes
-app.use('/api/v1/', notificationRoutes); //all notification routes
-app.use('/api/v1/', marketPlaceRoutes);
-app.use('/api/v1', attendenceRoutes); // attendence routes
-app.use('/api/v1', advancePaymentRoutes); // advance payment routes
-app.use('/api/v1', paymentHistoryRoutes);
-app.use('/api/v1', leaveRequestRoutes);
-app.use('/api/v1', taskMarketPlaceRoutes);
-app.use('/api/v1', jwtRoutes);
-app.use("/api/v1", colorSpaceRoutes)
-app.use("/api/v1", templateSizeRoutes)
-app.use("/api/v1", disclaimerRoutes)
+// 404 Handler
+app.all("*", notFoundHandler);
 
+// Error Handling Middleware (HTML Response)
+app.use((err, req, res, next) => {
+  const errorMessage = err.message || "Internal Server Error";
+  const errorStatus = err.status || 500;
 
-// Error handling middleware
-const errorHandler = require('./middlewares/errorHandler');
+  res.status(errorStatus).send(`
+    <html>
+      <head>
+        <title>Error | Olynex</title>
+        <style>
+          body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+          }
+          .container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          }
+          h1 {
+            color: #dc3545;
+            font-size: 36px;
+            margin-bottom: 10px;
+          }
+          p {
+            color: #6c757d;
+            font-size: 18px;
+          }
+          .error-details {
+            margin-top: 20px;
+          }
+          .error-code {
+            font-weight: bold;
+            color: #007bff;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Error: ${errorStatus}</h1>
+          <p>Oops! Something went wrong.</p>
+          <div class="error-details">
+            <p class="error-code">Error Type: ${errorStatus}</p>
+            <p class="error-message">${errorMessage}</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `);
+});
 
+// Global Error Handling Middleware (JSON Response)
 app.use(errorHandler);
 
 module.exports = app;
