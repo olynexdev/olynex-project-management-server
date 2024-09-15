@@ -26,6 +26,10 @@ const attendenceScema = new mongoose.Schema(
     note: {
       note: String,
     },
+    casual:{
+      type: Boolean,
+      required: true,
+    }
   },
   {
     timestamps: true,
