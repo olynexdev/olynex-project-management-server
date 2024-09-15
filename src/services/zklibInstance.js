@@ -3,90 +3,108 @@ const AttendanceModel = require('../models/attendence.model');
 const moment = require('moment');
 
 let lastSeenTimestamp = new Date(); // Initialize to current time to avoid processing old records
+let zkInstance; // To track ZKLib instance
 
-async function initializeZKLib() {
-  const zkInstance = new ZKLib(process.env.ZKLIB_IP_ADDRESS, 4370, 5200, 5000);
+// Function to connect to ZKTeco device with retries
+async function connectToZKLib() {
+  zkInstance = new ZKLib(process.env.ZKLIB_IP_ADDRESS, 4370, 5200, 5000);
 
   try {
     await zkInstance.createSocket();
     console.log('Connected to ZKTeco device');
-
-    setInterval(async () => {
-      try {
-        const logs = await zkInstance.getAttendances();
-        // const user = await zkInstance.getUsers()
-        // console.log(user);
-        if (logs && Array.isArray(logs.data)) {
-
-
-
-          // Only process logs after the last seen timestamp
-          const newLogs = logs.data.filter(
-            log => new Date(log.recordTime) > lastSeenTimestamp
-          );
-
-          if (newLogs.length > 0) {
-            // Update lastSeenTimestamp to the latest record time
-            lastSeenTimestamp = new Date(
-              Math.max(...newLogs.map(log => new Date(log.recordTime)))
-            );
-
-            for (const log of newLogs) {
-              const recordTime = moment(log.recordTime);
-
-              // Skip posting if time is between 1:30 PM and 3:00 PM
-              if (
-                recordTime.isBetween(
-                  moment('13:30', 'HH:mm'),
-                  moment('15:00', 'HH:mm')
-                )
-              ) {
-                console.log('Skipping time between 1:30 PM and 3:00 PM');
-                continue;
-              }
-
-              const existingRecord = await AttendanceModel.findOne({
-                userId: log.deviceUserId,
-                date: recordTime.format('YYYY-MM-DD'),
-              });
-
-              if (!existingRecord) {
-                // Create a new record if none exists
-                await AttendanceModel.create({
-                  userId: log.deviceUserId,
-                  inGoing: recordTime.isBefore(moment('13:30', 'HH:mm'))
-                    ? log.recordTime
-                    : null,
-                  outGoing: recordTime.isAfter(moment('15:00', 'HH:mm'))
-                    ? log.recordTime
-                    : null,
-                  OfficeWorking: "00",
-                  date: recordTime.format("YYYY-MM-DD"),
-                  note: ""
-                });
-              } else {
-                // Update existing record
-                if (
-                  recordTime.isBefore(moment('13:30', 'HH:mm')) &&
-                  !existingRecord.inGoing
-                ) {
-                  existingRecord.inGoing = log.recordTime;
-                } else if (recordTime.isAfter(moment('15:00', 'HH:mm'))) {
-                  existingRecord.outGoing = log.recordTime;
-                }
-                await existingRecord.save();
-              }
-            }
-          }
-        } else {
-          console.error('Fetched logs data is not an array:', logs.data);
-        }
-      } catch (err) {
-        console.error('Error fetching attendance:', err);
-      }
-    }, 10000); // Poll every 10 seconds
+    return true;
   } catch (err) {
     console.error('Error connecting to ZKTeco device:', err);
+    return false;
+  }
+}
+
+// Function to fetch and process attendance logs
+async function fetchAttendanceLogs() {
+  try {
+    const logs = await zkInstance.getAttendances();
+    if (logs && Array.isArray(logs.data)) {
+      // Only process logs after the last seen timestamp
+      const newLogs = logs.data.filter(log => new Date(log.recordTime) > lastSeenTimestamp);
+
+      if (newLogs.length > 0) {
+        // Update lastSeenTimestamp to the latest record time
+        lastSeenTimestamp = new Date(
+          Math.max(...newLogs.map(log => new Date(log.recordTime)))
+        );
+
+        for (const log of newLogs) {
+          const recordTime = moment(log.recordTime);
+
+          // Skip posting if time is between 1:30 PM and 3:00 PM
+          if (recordTime.isBetween(moment('13:30', 'HH:mm'), moment('15:00', 'HH:mm'))) {
+            console.log('Skipping time between 1:30 PM and 3:00 PM');
+            continue;
+          }
+
+          const existingRecord = await AttendanceModel.findOne({
+            userId: log.deviceUserId,
+            date: recordTime.format('YYYY-MM-DD'),
+          });
+
+          if (!existingRecord) {
+            // Create a new record if none exists
+            await AttendanceModel.create({
+              userId: log.deviceUserId,
+              inGoing: recordTime.isBefore(moment('13:30', 'HH:mm')) ? log.recordTime : null,
+              outGoing: recordTime.isAfter(moment('15:00', 'HH:mm')) ? log.recordTime : null,
+              OfficeWorking: "00",
+              date: recordTime.format("YYYY-MM-DD"),
+              note: ""
+            });
+          } else {
+            // Update existing record
+            if (recordTime.isBefore(moment('13:30', 'HH:mm')) && !existingRecord.inGoing) {
+              existingRecord.inGoing = log.recordTime;
+            } else if (recordTime.isAfter(moment('15:00', 'HH:mm'))) {
+              existingRecord.outGoing = log.recordTime;
+            }
+            await existingRecord.save();
+          }
+        }
+      }
+    } else {
+      console.error('Fetched logs data is not an array:', logs.data);
+    }
+  } catch (err) {
+    console.error('Error fetching attendance:', err);
+  }
+}
+
+// Function to initialize ZKTeco and handle reconnects
+async function initializeZKLib() {
+  const maxRetries = 5; // Max number of retries for connecting
+  let connected = await connectToZKLib();
+  let retries = 0;
+
+  if (!connected) {
+    console.log('Retrying connection to ZKTeco device...');
+  }
+
+  // Retry logic if initial connection fails
+  while (!connected && retries < maxRetries) {
+    await new Promise(resolve => setTimeout(resolve, 60000)); // Retry every 5 seconds
+    connected = await connectToZKLib();
+    retries++;
+    console.log(`Retry attempt ${retries}`);
+  }
+
+  // If the connection is successful, start polling for logs
+  if (connected) {
+    setInterval(async () => {
+      try {
+        await fetchAttendanceLogs();
+      } catch (err) {
+        console.error('Error processing attendance logs:', err);
+      }
+    }, 10000); // Poll every 10 seconds
+  } else {
+    console.error('Failed to connect to ZKTeco device after maximum retries.');
   }
 }
 
