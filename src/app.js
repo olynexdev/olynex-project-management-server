@@ -41,7 +41,7 @@ const routes = {
   notification: require("./routes/notification.routes.js"),
   attendance: require("./routes/attendence.routes.js"),
   advancePayment: require("./routes/advancePayment.routes.js"),
-  paymentHistory: require("./routes/paymentHistory.routes.js"),
+  paymentHistory: require("./routes/paymentHIstory.routes.js"),
   leaveRequest: require("./routes/leaveRequest.routes.js"),
   taskMarketPlace: require("./routes/taskMarketPlace.routes.js"),
   jwt: require("./routes/jwt.routes.js"),
@@ -96,12 +96,21 @@ app.get("/", (req, res) => {
             font-size: 18px;
             text-align: center;
           }
+            .heading-img{
+            display:flex;
+            justify-content: center;
+            }
+            .runner-img{
+           
+            height: 30px
+            }
         </style>
       </head>
       <body>
         <div>
-          <h1>Olynex Management Server Running...! 🏃‍➡️</h1>
-          <p>Please check your website.</p>
+            <div class="heading-img"><img src='https://media.tenor.com/Fhg7SnBUCcEAAAAi/cat-dance.gif' alt='No Img'/></div>
+          <h1>Olynex Management Server Running...! <img class='runner-img' src='https://i.imgur.com/Il19vKq.gif' /></h1>
+          <p>Please check your dashboard <a target="_blank" href='https://olynex.online/'>Click Here</a> </p>
         </div>
       </body>
     </html>
