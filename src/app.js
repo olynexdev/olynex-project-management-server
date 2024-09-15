@@ -110,7 +110,7 @@ app.get("/", (req, res) => {
         <div>
             <div class="heading-img"><img src='https://media.tenor.com/Fhg7SnBUCcEAAAAi/cat-dance.gif' alt='No Img'/></div>
           <h1>Olynex Management Server Running...! <img class='runner-img' src='https://i.imgur.com/Il19vKq.gif' /></h1>
-          <p>Please check your website <a href='https://olynex.online/'>Click Here</a> </p>
+          <p>Please check your dashboard <a target="_blank" href='https://olynex.online/'>Click Here</a> </p>
         </div>
       </body>
     </html>
