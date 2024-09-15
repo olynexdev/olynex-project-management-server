@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     userType: { type: String },
     userPhoneNumber: { type: Number },
     dateOfBirth: { type: Date },
-    NIDNo: { type: Number },
+    NIDNo: { type: String },
     maritalStatus: { type: String },
     gender: { type: String },
     department: { type: String },
@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
     permanentDivision: { type: String },
   },
   bankInfo: {
-    accountNumber: { type: Number },
+    accountNumber: { type: String },
     accountHolder: { type: String },
     bankName: { type: String },
     accountMobileNumber: { type: Number },
