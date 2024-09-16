@@ -23,7 +23,7 @@ const server = https.createServer(
 
 const io = socketIO(server, {
   // pingTimeout: 60000,
-  pingTimeout: 600000,  // Set a high value, e.g., 10 minutes (600,000 ms)
+  pingTimeout: 60000, // Set a high value, e.g., 10 minutes (600,000 ms)
   pingInterval: 25000,
   cors: {
     origin: ['http://localhost:5173', 'https://olynex.online'],
@@ -33,6 +33,7 @@ const io = socketIO(server, {
 
 io.on('connection', socket => {
   console.log('A user connected:', socket.id);
+  socket.setMaxListeners(30);
 
   // Use 'once' for events to avoid multiple event listener issues
   socket.once('disconnect', () => {
