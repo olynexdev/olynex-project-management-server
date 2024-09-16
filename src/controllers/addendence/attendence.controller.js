@@ -19,11 +19,12 @@ const monthMap = {
 };
 
 exports.getAllAttendances = async (req, res) => {
-  const searchQuery = req.query.search;
-  const monthQuery = req.query.month;
-  const dateQuery = req.query.date; // date format is 2024-08-24T05:41:31.659Z
+  const searchQuery = req.query.search; // User ID
+  const monthQuery = req.query.month; // Month name
+  const dateQuery = req.query.date; // Specific date (format: 2024-08-24T05:41:31.659Z)
+
   const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 10; // Number of records per page
+  const limit = parseInt(req.query.limit, 10) || 10;
   const skip = (page - 1) * limit;
 
   const id = parseInt(searchQuery, 10);
@@ -31,50 +32,67 @@ exports.getAllAttendances = async (req, res) => {
   try {
     let query = {};
 
-    // filter by month
-    if (monthQuery && monthMap[monthQuery] !== undefined) {
-      const selectedMonth = monthMap[monthQuery];
-      const currentYear = new Date().getFullYear();
-
-      const startDate = new Date(currentYear, selectedMonth, 1); // month start date
-      const endDate = new Date(currentYear, selectedMonth + 1, 1); // month end date
-
-      query.createdAt = { $gte: startDate, $lt: endDate };
-
-      // Fetch the data from MongoDB with pagination for the month filter
-      const attendances = await AttendanceModel.find(query)
-        .skip(skip)
-        .limit(limit);
-
-      // Get total count for pagination
-      const totalRecords = await AttendanceModel.countDocuments(query);
-      const totalPages = Math.ceil(totalRecords / limit);
-
-      return res.json({
-        attendances,
-        currentPage: page,
-        totalPages,
-        totalRecords,
-      });
+    // Default behavior: If no month, or date, use the current date
+    if (
+      (searchQuery == 'null' || !searchQuery || searchQuery == '') &&
+      monthQuery == 'null'
+    ) {
+      const currentDate = new Date(dateQuery);
+      const startNewDate = new Date(currentDate.setUTCHours(0, 0, 0, 0)); // Start of today
+      const endNewDate = new Date(currentDate.setUTCHours(23, 59, 59, 999)); // End of today
+      query.createdAt = { $gte: startNewDate, $lt: endNewDate };
     }
 
-    // search query
-    if (id) {
-      query.userId = id;
+    // 1. If month=something, search=something, date='null' => User's specific month's data
+    if (
+      monthQuery != 'null' &&
+      (dateQuery == 'null' || dateQuery == 'undefined') &&
+      id
+    ) {
+      if (monthMap[monthQuery] !== undefined) {
+        const selectedMonth = monthMap[monthQuery];
+        const currentYear = new Date().getFullYear();
+        const startDate = new Date(currentYear, selectedMonth, 1); // Start of the month
+        const endDate = new Date(currentYear, selectedMonth + 1, 1); // End of the month
+
+        query.createdAt = { $gte: startDate, $lt: endDate };
+        query.userId = id; // Filter by user's ID as well
+      }
     }
 
-    // date query
-    if (dateQuery && !id) {
+    // 2. If month='null', search=something, date=something => User's specific date data
+    if (monthQuery == 'null' && dateQuery != 'null' && id) {
       const selectedDate = new Date(dateQuery);
       if (isNaN(selectedDate)) {
         return res.status(400).send('Invalid date format.');
       }
       const startNewDate = new Date(selectedDate.setUTCHours(0, 0, 0, 0)); // Start of the selected day
       const endNewDate = new Date(selectedDate.setUTCHours(23, 59, 59, 999)); // End of the selected day
+
       query.createdAt = { $gte: startNewDate, $lt: endNewDate };
+      query.userId = id; // Ensure it's filtering by the user's ID
+      console.log('inside of date and user', query, selectedDate);
     }
 
-    // Fetch the data from MongoDB with pagination for other filters
+    // 3. If month=something, date='null', search=empty or 'null' => All users' specific month data
+    if (
+      monthQuery != 'null' &&
+      (dateQuery == 'null' || dateQuery == 'undefined') &&
+      (searchQuery == 'null' || searchQuery === '')
+    ) {
+      console.log('object', query);
+      if (monthMap[monthQuery] !== undefined) {
+        const selectedMonth = monthMap[monthQuery];
+        const currentYear = new Date().getFullYear();
+        const startDate = new Date(currentYear, selectedMonth, 1); // Start of the month
+        const endDate = new Date(currentYear, selectedMonth + 1, 1); // End of the month
+
+        query.createdAt = { $gte: startDate, $lt: endDate };
+      }
+    }
+    console.log(query);
+
+    // Fetch the data from MongoDB with pagination
     const attendances = await AttendanceModel.find(query)
       .skip(skip)
       .limit(limit);
@@ -196,8 +214,8 @@ exports.postAbsentAttendance = async (req, res) => {
           const newAttendance = new AttendanceModel({
             userId: user.userId,
             date: moment().format('YYYY-MM-DD'),
-            inGoing: null,
-            outGoing: null,
+            inGoing: 'null',
+            outGoing: 'null',
             OfficeWorking: '0',
             note: '',
           });
@@ -274,7 +292,7 @@ exports.attendanceCounts = async (req, res) => {
         },
         {
           $group: {
-            _id: null,
+            _id: 'null',
             totalDays: { $sum: 1 },
             totalAttendedDays: { $sum: '$attendedDays' },
             totalAbsentDays: { $sum: '$absentDays' },
@@ -318,7 +336,7 @@ exports.attendanceCounts = async (req, res) => {
         },
         {
           $group: {
-            _id: null,
+            _id: 'null',
             totalDays: { $sum: 1 },
             totalAttendedDays: { $sum: '$attendedDays' },
             totalAbsentDays: { $sum: '$absentDays' },
