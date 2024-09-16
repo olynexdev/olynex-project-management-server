@@ -11,10 +11,10 @@ async function connectToZKLib() {
 
   try {
     await zkInstance.createSocket();
-    console.log('Connected to ZKTeco device');
+    console.log('Connected to ZKTeco device...');
     return true;
   } catch (err) {
-    console.error('Error connecting to ZKTeco device:', err);
+    console.log('Error connecting to ZKTeco device:', err?.command,  `[IP - ${err?.ip}]`);
     return false;
   }
 }
@@ -23,6 +23,7 @@ async function connectToZKLib() {
 async function fetchAttendanceLogs() {
   try {
     const logs = await zkInstance.getAttendances();
+
     if (logs && Array.isArray(logs.data)) {
       // Only process logs after the last seen timestamp
       const newLogs = logs.data.filter(log => new Date(log.recordTime) > lastSeenTimestamp);
@@ -36,9 +37,9 @@ async function fetchAttendanceLogs() {
         for (const log of newLogs) {
           const recordTime = moment(log.recordTime);
 
-          // Skip posting if time is between 1:30 PM and 3:00 PM
-          if (recordTime.isBetween(moment('13:30', 'HH:mm'), moment('15:00', 'HH:mm'))) {
-            console.log('Skipping time between 1:30 PM and 3:00 PM');
+          // Skip posting if time is between 1:30 PM and 14:45 PM
+          if (recordTime.isBetween(moment('13:30', 'HH:mm'), moment('14:45', 'HH:mm'))) {
+            console.log('Skipping ZkTeco finger time between 1:30 PM to 2:45 PM');
             continue;
           }
 
@@ -55,7 +56,8 @@ async function fetchAttendanceLogs() {
               outGoing: recordTime.isAfter(moment('15:00', 'HH:mm')) ? log.recordTime : null,
               OfficeWorking: "00",
               date: recordTime.format("YYYY-MM-DD"),
-              note: ""
+              note: "",
+              casual: false
             });
           } else {
             // Update existing record
@@ -78,7 +80,7 @@ async function fetchAttendanceLogs() {
 
 // Function to initialize ZKTeco and handle reconnects
 async function initializeZKLib() {
-  const maxRetries = 5; // Max number of retries for connecting
+  const maxRetries = 10; // Max number of retries for connecting
   let connected = await connectToZKLib();
   let retries = 0;
 
@@ -91,7 +93,7 @@ async function initializeZKLib() {
     await new Promise(resolve => setTimeout(resolve, 60000)); // Retry every 5 seconds
     connected = await connectToZKLib();
     retries++;
-    console.log(`Retry attempt ${retries}`);
+    console.log(`ZkTeco finger device retry attempt: ${retries}`);
   }
 
   // If the connection is successful, start polling for logs
