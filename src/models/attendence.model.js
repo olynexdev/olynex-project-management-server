@@ -21,10 +21,11 @@ const attendenceScema = new mongoose.Schema(
       required: true,
     },
     overTime: {
-      overTime: Number,
+      type: Number,
+      required: true,
     },
     note: {
-      note: String,
+      type: String,
     },
     casual:{
       type: Boolean,
