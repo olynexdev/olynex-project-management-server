@@ -60,6 +60,26 @@ exports.getLeaveRequest = async (req, res) => {
   }
 };
 
+// delete a leave request
+exports.DeleteLeaveRequest = async (req, res)=>{
+  const { id } = req.params; 
+  if (!id) {
+    return res.status(400).json({ message: "Invalid request: ID is required." });
+  }
+  try {
+    const result = await leaveRequestModal.findByIdAndDelete(id); 
+
+    if (!result) {
+      // If no document is found, return a 404 response
+      return res.status(404).json({ message: "Request record not found." });
+    }
+
+    res.status(200).json({ message: "Leave Request record deleted successfully.", result });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete request record.", error: err.message });
+  }
+}
+
 // update leave request status
 exports.responseLeaveRequest = async (req, res) => {
   const { id, status } = req.body;
