@@ -164,6 +164,26 @@ exports.deleteAllAttendance = async (req, res) => {
     res.status(500).send({ message: 'Failed to delete all attendance:', err });
   }
 };
+// delete a attendance
+exports.deleteAttendance = async (req, res) => {
+  const { id } = req.params; 
+  if (!id) {
+    return res.status(400).json({ message: "Invalid request: ID is required." });
+  }
+
+  try {
+    const result = await AttendanceModel.findByIdAndDelete(id); 
+
+    if (!result) {
+      // If no document is found, return a 404 response
+      return res.status(404).json({ message: "Attendance record not found." });
+    }
+
+    res.status(201).json({ message: "Attendance record deleted successfully.", result });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete attendance record.", error: err.message });
+  }
+};
 
 // post attendance in in frontend
 exports.postAttendance = async (req, res) => {
