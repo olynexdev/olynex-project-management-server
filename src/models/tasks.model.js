@@ -7,7 +7,7 @@ const taskSchema = new mongoose.Schema(
     category: { type: String, required: true },
     categoryNumber: { type: Number, require: true },
     department: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String},
     colorSpace: { type: String, required: true },
     pages: { type: String, required: true },
     size: [],
@@ -19,7 +19,7 @@ const taskSchema = new mongoose.Schema(
     taskTimer: { type: String },
     starPoint: { type: Number },
     taskResource: {
-      url: { type: String, required: true },
+      url: { type: String},
       view: { type: Boolean, required: false },
     },
     taskCreator: {
