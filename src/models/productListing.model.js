@@ -59,6 +59,7 @@ const productListingSchema = new mongoose.Schema(
     },
     productId: {
       type: Number,
+      unique: true,
       required: true,
     },
     used: {

@@ -8,7 +8,7 @@ const nextNotificationTimes = {};
 
 // Schedule a cron job to run every minute
 const schedulePendingTaskCheck = io => {
-  cron.schedule('* * * * *', async () => {
+  cron.schedule('*/7 * * * *', async () => {
     const intervalMillis = 10 * 60000; // 10 minutes
 
     // Prevent overlapping executions

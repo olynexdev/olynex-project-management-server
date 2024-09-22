@@ -5,14 +5,21 @@ const UserModel = require('../../models/users.model');
 // get all users data
 exports.getUsers = async (req, res) => {
   try {
-    const { designation } = req.query;
-    let filter = {};
-    if (designation) {
-      filter = { 'personalInfo.designation': designation };
+    const { designation, page, limit } = req.query;
+    const filter = designation
+      ? { 'personalInfo.designation': designation }
+      : {};
+    if (page || limit) {
+      const skip = (page - 1) * limit;
+      const result = await UserModel.find(filter)
+        .skip(skip)
+        .limit(Number(limit));
+      const totalCount = await UserModel.countDocuments(filter);
+      return res.status(200).send({ data: result, totalCount });
     }
     const result = await UserModel.find(filter);
 
-    res.status(201).send(result);
+    res.status(200).send({ data: result, totalCount });
   } catch (err) {
     res.status(500).send({ message: 'User get Error!', err });
   }
