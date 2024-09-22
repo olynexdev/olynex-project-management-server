@@ -166,22 +166,31 @@ exports.deleteAllAttendance = async (req, res) => {
 };
 // delete a attendance
 exports.deleteAttendance = async (req, res) => {
-  const { id } = req.params; 
+  const { id } = req.params;
   if (!id) {
-    return res.status(400).json({ message: "Invalid request: ID is required." });
+    return res
+      .status(400)
+      .json({ message: 'Invalid request: ID is required.' });
   }
 
   try {
-    const result = await AttendanceModel.findByIdAndDelete(id); 
+    const result = await AttendanceModel.findByIdAndDelete(id);
 
     if (!result) {
       // If no document is found, return a 404 response
-      return res.status(404).json({ message: "Attendance record not found." });
+      return res.status(404).json({ message: 'Attendance record not found.' });
     }
 
-    res.status(201).json({ message: "Attendance record deleted successfully.", result });
+    res
+      .status(201)
+      .json({ message: 'Attendance record deleted successfully.', result });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete attendance record.", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: 'Failed to delete attendance record.',
+        error: err.message,
+      });
   }
 };
 
@@ -372,7 +381,6 @@ exports.attendanceCounts = async (req, res) => {
       totalAbsentDays: 0,
     };
 
-    console.log('Aggregated Data:', result);
     res.status(200).json(result);
   } catch (error) {
     // Handle any errors that occurred
