@@ -1,44 +1,46 @@
 const ZKLib = require('node-zklib');
 const AttendanceModel = require('../models/attendence.model');
 const moment = require('moment');
+const UserModel = require('../models/users.model');
 
-let lastSeenTimestamp = new Date(); // Initialize to current time to avoid processing old records
-let zkInstance; // To track ZKLib instance
+let lastSeenTimestamp = new Date();
+let zkInstance;
 
-// Function to connect to ZKTeco device with retries
+// Connect to ZKTeco device
 async function connectToZKLib() {
   zkInstance = new ZKLib(process.env.ZKLIB_IP_ADDRESS, 4370, 5200, 5000);
-
   try {
     await zkInstance.createSocket();
-    console.log('Connected to ZKTeco device');
+    console.log('Connected to ZKTeco device...');
     return true;
   } catch (err) {
-    console.error('Error connecting to ZKTeco device:', err);
+    console.error('Error connecting to ZKTeco device:', err.message, `[IP - ${err?.ip}]`);
     return false;
   }
 }
 
-// Function to fetch and process attendance logs
+// Fetch attendance logs
 async function fetchAttendanceLogs() {
   try {
     const logs = await zkInstance.getAttendances();
+
     if (logs && Array.isArray(logs.data)) {
-      // Only process logs after the last seen timestamp
       const newLogs = logs.data.filter(log => new Date(log.recordTime) > lastSeenTimestamp);
 
       if (newLogs.length > 0) {
-        // Update lastSeenTimestamp to the latest record time
-        lastSeenTimestamp = new Date(
-          Math.max(...newLogs.map(log => new Date(log.recordTime)))
-        );
+        const latestRecordTime = new Date(Math.max(...newLogs.map(log => new Date(log.recordTime))));
+        lastSeenTimestamp = latestRecordTime;
 
         for (const log of newLogs) {
           const recordTime = moment(log.recordTime);
 
-          // Skip posting if time is between 1:30 PM and 3:00 PM
-          if (recordTime.isBetween(moment('13:30', 'HH:mm'), moment('15:00', 'HH:mm'))) {
-            console.log('Skipping time between 1:30 PM and 3:00 PM');
+          if (recordTime.isBetween(moment('13:30', 'HH:mm'), moment('14:45', 'HH:mm'))) {
+            console.log('Skipping time between 1:30 PM and 2:45 PM');
+            continue;
+          }
+
+          if (!log.deviceUserId) {
+            console.warn('Invalid log entry - deviceUserId missing.');
             continue;
           }
 
@@ -47,64 +49,74 @@ async function fetchAttendanceLogs() {
             date: recordTime.format('YYYY-MM-DD'),
           });
 
-          if (!existingRecord) {
-            // Create a new record if none exists
-            await AttendanceModel.create({
-              userId: log.deviceUserId,
-              inGoing: recordTime.isBefore(moment('13:30', 'HH:mm')) ? log.recordTime : null,
-              outGoing: recordTime.isAfter(moment('15:00', 'HH:mm')) ? log.recordTime : null,
-              OfficeWorking: "00",
-              date: recordTime.format("YYYY-MM-DD"),
-              note: ""
-            });
-          } else {
-            // Update existing record
-            if (recordTime.isBefore(moment('13:30', 'HH:mm')) && !existingRecord.inGoing) {
-              existingRecord.inGoing = log.recordTime;
-            } else if (recordTime.isAfter(moment('15:00', 'HH:mm'))) {
-              existingRecord.outGoing = log.recordTime;
+          const findUser = await UserModel.findOne({ userId: log.deviceUserId });
+
+          if (findUser) {
+            if (!existingRecord) {
+              await AttendanceModel.create({
+                userId: log.deviceUserId,
+                inGoing: recordTime.isBefore(moment('13:30', 'HH:mm')) ? log.recordTime : null,
+                outGoing: recordTime.isAfter(moment('15:00', 'HH:mm')) ? log.recordTime : null,
+                OfficeWorking: "00",
+                date: recordTime.format("YYYY-MM-DD"),
+                note: "",
+                casual: false,
+                overTime: 0,
+              });
+            } else {
+              if (recordTime.isBefore(moment('13:30', 'HH:mm')) && !existingRecord.inGoing) {
+                existingRecord.inGoing = log.recordTime;
+              } else if (recordTime.isAfter(moment('15:00', 'HH:mm'))) {
+                existingRecord.outGoing = log.recordTime;
+              }
+              await existingRecord.save();
             }
-            await existingRecord.save();
+          } else {
+            console.log('User not found for deviceUserId:', log.deviceUserId);
           }
         }
       }
     } else {
-      console.error('Fetched logs data is not an array:', logs.data);
+      console.error('Invalid logs data:', logs.data);
     }
   } catch (err) {
-    console.error('Error fetching attendance:', err);
+    console.error('Error fetching attendance logs:', err.message);
   }
 }
 
-// Function to initialize ZKTeco and handle reconnects
+// Initialize and handle retries
 async function initializeZKLib() {
-  const maxRetries = 5; // Max number of retries for connecting
+  const maxRetries = 10;
   let connected = await connectToZKLib();
   let retries = 0;
 
   if (!connected) {
-    console.log('Retrying connection to ZKTeco device...');
+    console.log('Retrying connection...');
   }
 
-  // Retry logic if initial connection fails
   while (!connected && retries < maxRetries) {
     await new Promise(resolve => setTimeout(resolve, 60000)); // Retry every 5 seconds
     connected = await connectToZKLib();
     retries++;
-    console.log(`Retry attempt ${retries}`);
+    console.log(`Retry attempt: ${retries}`);
   }
 
-  // If the connection is successful, start polling for logs
   if (connected) {
+    let isPolling = false;
+
     setInterval(async () => {
+      if (isPolling) return;
+      isPolling = true;
       try {
         await fetchAttendanceLogs();
       } catch (err) {
-        console.error('Error processing attendance logs:', err);
+        console.error('Error processing logs:', err);
+      } finally {
+        isPolling = false;
       }
     }, 10000); // Poll every 10 seconds
   } else {
-    console.error('Failed to connect to ZKTeco device after maximum retries.');
+    console.error('Failed to connect after maximum retries.');
   }
 }
 

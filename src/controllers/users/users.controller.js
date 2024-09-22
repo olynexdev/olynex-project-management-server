@@ -46,7 +46,7 @@ exports.updateUser = async (req, res) => {
     const result = await UserModel.updateOne({ _id: id }, { $set: updateData });
     res.status(201).send(result);
   } catch (err) {
-    res.status(500).send({ message: 'Error updating designation', error: err });
+    res.status(500).send({ message: 'Error updating user!', error: err });
   }
 };
 

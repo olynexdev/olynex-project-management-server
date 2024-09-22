@@ -49,11 +49,9 @@ const productListingSchema = new mongoose.Schema(
     },
     source_link: {
       type: String,
-      required: true,
     },
     details: {
       type: String,
-      required: true,
     },
     keywords: {
       type: String,

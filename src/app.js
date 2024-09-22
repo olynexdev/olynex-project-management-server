@@ -46,7 +46,6 @@ const routes = {
   taskMarketPlace: require("./routes/taskMarketPlace.routes.js"),
   jwt: require("./routes/jwt.routes.js"),
   colorSpace: require("./routes/colorSpace.routes.js"),
-  templateSize: require("./routes/templateSize.routes.js"),
   disclaimer: require("./routes/disclaimer.routes.js"),
 };
 
@@ -67,7 +66,6 @@ app.use("/api/v1", routes.leaveRequest);
 app.use("/api/v1", routes.taskMarketPlace);
 app.use("/api/v1", routes.jwt);
 app.use("/api/v1", routes.colorSpace);
-app.use("/api/v1", routes.templateSize);
 app.use("/api/v1", routes.disclaimer);
 
 // Home route
