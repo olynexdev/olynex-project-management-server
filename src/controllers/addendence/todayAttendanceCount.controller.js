@@ -15,6 +15,10 @@ exports.todayAttendanceCount = async (req, res) => {
         $gte: startOfDay,
         $lte: endOfDay,
       },
+      $or: [
+        { inGoing: { $ne: null } },
+        { outGoing: { $ne: null } }
+      ]
     });
 
     // Get the total number of users
