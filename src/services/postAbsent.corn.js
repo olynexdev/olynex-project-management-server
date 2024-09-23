@@ -5,7 +5,7 @@ const moment = require('moment');
 
 // Schedule a job to run at 6 PM every day except Fridays
 const scheduleAttendanceCheck = () => {
-  cron.schedule('0 18 * * 0-4,6-7', async () => {
+  cron.schedule('0 11 * * 0-4,6-7', async () => {
     try {
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0); // Start of the day
@@ -35,6 +35,8 @@ const scheduleAttendanceCheck = () => {
             inGoing: null,
             outGoing: null,
             overTime: 0,
+            casual: false,
+            note: ""
           });
           console.log(`Employee ${employee.userId} marked as absent.`);
         }
