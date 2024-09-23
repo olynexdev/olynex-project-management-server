@@ -36,7 +36,7 @@ const scheduleAttendanceCheck = () => {
             outGoing: null,
             overTime: 0,
             casual: false,
-            note: ""
+            note: "Absent (Auto-generated)"
           });
           console.log(`Employee ${employee.userId} marked as absent.`);
         }
