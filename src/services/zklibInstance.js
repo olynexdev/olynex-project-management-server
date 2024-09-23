@@ -59,7 +59,7 @@ async function fetchAttendanceLogs() {
                 outGoing: recordTime.isAfter(moment('15:00', 'HH:mm')) ? log.recordTime : null,
                 OfficeWorking: "00",
                 date: recordTime.format("YYYY-MM-DD"),
-                note: "",
+                note: "Present in this user, (Created by ZkTeco finger device)",
                 casual: false,
                 overTime: 0,
               });
