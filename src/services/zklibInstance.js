@@ -19,7 +19,7 @@ async function connectToZKLib() {
   }
 }
 
-// Fetch attendance logs
+// Fetch attendance logs and process them in batches
 async function fetchAttendanceLogs() {
   try {
     const logs = await zkInstance.getAttendances();
@@ -31,56 +31,81 @@ async function fetchAttendanceLogs() {
         const latestRecordTime = new Date(Math.max(...newLogs.map(log => new Date(log.recordTime))));
         lastSeenTimestamp = latestRecordTime;
 
-        for (const log of newLogs) {
-          const recordTime = moment(log.recordTime);
-
-          if (recordTime.isBetween(moment('13:30', 'HH:mm'), moment('14:45', 'HH:mm'))) {
-            console.log('Skipping time between 1:30 PM and 2:45 PM');
-            continue;
-          }
-
-          if (!log.deviceUserId) {
-            console.warn('Invalid log entry - deviceUserId missing.');
-            continue;
-          }
-
-          const existingRecord = await AttendanceModel.findOne({
-            userId: log.deviceUserId,
-            date: recordTime.format('YYYY-MM-DD'),
-          });
-
-          const findUser = await UserModel.findOne({ userId: log.deviceUserId });
-
-          if (findUser) {
-            if (!existingRecord) {
-              await AttendanceModel.create({
-                userId: log.deviceUserId,
-                inGoing: recordTime.isBefore(moment('13:30', 'HH:mm')) ? log.recordTime : null,
-                outGoing: recordTime.isAfter(moment('15:00', 'HH:mm')) ? log.recordTime : null,
-                OfficeWorking: "00",
-                date: recordTime.format("YYYY-MM-DD"),
-                note: "Present in this user, (Created by ZkTeco finger device)",
-                casual: false,
-                overTime: 0,
-              });
-            } else {
-              if (recordTime.isBefore(moment('13:30', 'HH:mm')) && !existingRecord.inGoing) {
-                existingRecord.inGoing = log.recordTime;
-              } else if (recordTime.isAfter(moment('15:00', 'HH:mm'))) {
-                existingRecord.outGoing = log.recordTime;
-              }
-              await existingRecord.save();
-            }
-          } else {
-            console.log('User not found for deviceUserId:', log.deviceUserId);
-          }
-        }
+        // Process all logs in batches
+        await processAttendanceLogsInBatch(newLogs);
       }
     } else {
       console.error('Invalid logs data:', logs.data);
     }
   } catch (err) {
     console.error('Error fetching attendance logs:', err.message);
+  }
+}
+
+// Process logs in batches
+async function processAttendanceLogsInBatch(logs) {
+  const recordsToInsert = [];
+  const updatePromises = [];
+
+  for (const log of logs) {
+    const recordTime = moment(log.recordTime);
+
+    // Skip records between 1:30 PM and 2:45 PM
+    if (recordTime.isBetween(moment('13:30', 'HH:mm'), moment('14:45', 'HH:mm'))) {
+      console.log('Skipping time between 1:30 PM and 2:45 PM');
+      continue;
+    }
+
+    if (!log.deviceUserId) {
+      console.warn('Invalid log entry - deviceUserId missing.');
+      continue;
+    }
+
+    // Find user and check for existing attendance
+    const findUser = await UserModel.findOne({ userId: log.deviceUserId });
+    if (!findUser) {
+      console.log('User not found for deviceUserId:', log.deviceUserId);
+      continue;
+    }
+
+    const existingRecord = await AttendanceModel.findOne({
+      userId: log.deviceUserId,
+      date: recordTime.format('YYYY-MM-DD'),
+    });
+
+    if (existingRecord) {
+      // Update inGoing or outGoing based on time
+      if (recordTime.isBefore(moment('13:30', 'HH:mm')) && !existingRecord.inGoing) {
+        existingRecord.inGoing = log.recordTime;
+      } else if (recordTime.isAfter(moment('15:00', 'HH:mm'))) {
+        existingRecord.outGoing = log.recordTime;
+      }
+      updatePromises.push(existingRecord.save());
+    } else {
+      // Prepare new attendance record for batch insert
+      recordsToInsert.push({
+        userId: log.deviceUserId,
+        inGoing: recordTime.isBefore(moment('13:30', 'HH:mm')) ? log.recordTime : null,
+        outGoing: recordTime.isAfter(moment('15:00', 'HH:mm')) ? log.recordTime : null,
+        OfficeWorking: "00",
+        date: recordTime.format("YYYY-MM-DD"),
+        note: "Present in this user, (Created by ZkTeco finger device)",
+        casual: false,
+        overTime: 0,
+      });
+    }
+  }
+
+  // Insert new records in bulk
+  if (recordsToInsert.length > 0) {
+    await AttendanceModel.insertMany(recordsToInsert);
+    console.log(`Inserted ${recordsToInsert.length} new attendance records.`);
+  }
+
+  // Wait for all updates to finish
+  if (updatePromises.length > 0) {
+    await Promise.all(updatePromises);
+    console.log(`Updated ${updatePromises.length} existing attendance records.`);
   }
 }
 
@@ -95,7 +120,7 @@ async function initializeZKLib() {
   }
 
   while (!connected && retries < maxRetries) {
-    await new Promise(resolve => setTimeout(resolve, 60000)); // Retry every 5 seconds
+    await new Promise(resolve => setTimeout(resolve, 60000)); // Retry every 60 seconds
     connected = await connectToZKLib();
     retries++;
     console.log(`Retry attempt: ${retries}`);
