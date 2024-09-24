@@ -25,16 +25,23 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-// get single user data
+// Get user by userId
 exports.getUserbyUserId = async (req, res) => {
-  const userId = req.params?.userId;
+  const userId = Number(req.params?.userId);
+
   try {
-    const result = await UserModel.findOne({ userId });
-    res.status(201).send(result);
+    const result = await UserModel.findOne({ userId: userId });
+    if (!result) {
+      return res.status(404).send({ message: 'User not found!' });
+    }
+
+    res.status(200).send(result);
   } catch (err) {
-    res.status(500).send({ message: 'User get Error!', err });
+    console.error('Error fetching user by userId:', err);
+    res.status(500).send({ message: 'Error retrieving user!', err });
   }
 };
+
 
 // get single user with email
 exports.getUserwithEmail = async (req, res) => {
