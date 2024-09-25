@@ -185,12 +185,10 @@ exports.deleteAttendance = async (req, res) => {
       .status(201)
       .json({ message: 'Attendance record deleted successfully.', result });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        message: 'Failed to delete attendance record.',
-        error: err.message,
-      });
+    res.status(500).json({
+      message: 'Failed to delete attendance record.',
+      error: err.message,
+    });
   }
 };
 
@@ -274,6 +272,7 @@ exports.updateAttendance = async (req, res) => {
   }
 };
 
+// edit attendance
 exports.editAttendance = async (req, res) => {
   const id = req.params.id;
   const attendanceData = req.body;
@@ -385,5 +384,45 @@ exports.attendanceCounts = async (req, res) => {
   } catch (error) {
     // Handle any errors that occurred
     res.status(500).json({ message: 'Error retrieving user counts', error });
+  }
+};
+
+// get casual leave count from attendance data
+exports.getCasualCountById = async (req, res) => {
+  const id = req.params.id;
+  const currentDate = new Date();
+
+  try {
+    // Find user by id to get the join date
+    const userData = await UserModel.findOne({ userId: id });
+    if (!userData) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const joinDate = new Date(userData?.personalInfo?.joinDate);
+    const yearsPassed = Math.floor(
+      (currentDate - joinDate) / (1000 * 60 * 60 * 24 * 365)
+    ); // Calculate years passed since joining
+
+    // Calculate the start date and end date for the current year
+    let startDate = new Date(joinDate);
+    startDate.setFullYear(joinDate.getFullYear() + yearsPassed);
+
+    let endDate = new Date(startDate);
+    endDate.setFullYear(startDate.getFullYear() + 1);
+    endDate.setHours(23, 59, 59, 999);
+
+    // Query to count casual leaves within the calculated date range
+    const casualCount = await AttendanceModel.countDocuments({
+      userId: id,
+      casual: true,
+      createdAt: { $gte: startDate, $lt: endDate },
+    });
+
+    return res.status(200).json({ casualCount, year: yearsPassed + 1 });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: 'Error getting casual leave count', error });
   }
 };
