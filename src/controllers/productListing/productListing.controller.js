@@ -2,31 +2,38 @@ const ProductListingModel = require('../../models/productListing.model');
 
 // Assuming you have a ProductListingModel with a field 'productId'
 const getNextProductId = async () => {
-  const latestProduct = await ProductListingModel.findOne().sort({
-    productId: -1,
-  });
+  // Get the product with the highest productId
+  const latestProduct = await ProductListingModel.findOne().sort({ productId: -1 });
+
+  // Check if a product exists
   if (latestProduct) {
-    return latestProduct.productId + 1;
+    // If the latest productId is less than 2325, return 2325; otherwise, return latestProduct.productId + 1
+    return latestProduct.productId >= 2325 ? latestProduct.productId + 1 : 2325;
   } else {
+    // If no products exist, return 2325 as the first productId
     return 2325;
   }
 };
 
 exports.addProduct = async (req, res) => {
-  const body = req.body; // req to frontend
   try {
     // Get the next product ID
     const nextProductId = await getNextProductId();
 
-    // Assign the next product ID to the body
-    body.productId = nextProductId;
-    // Create the new product
-    const result = await ProductListingModel.create(body);
+    // Create a new product with the provided body and assign the next product ID
+    const newProduct = { ...req.body, productId: nextProductId };
+
+    // Save the new product to the database
+    const result = await ProductListingModel.create(newProduct);
+    
+    // Send the created product as a response
     res.status(201).send(result);
   } catch (error) {
+    // Catch any errors and return a 500 status with the error message
     res.status(500).send({ message: 'Product Add Error!', error });
   }
 };
+
 
 // get all products data with pagination and categories
 exports.getProducts = async (req, res) => {
