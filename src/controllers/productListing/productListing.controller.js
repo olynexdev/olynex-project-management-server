@@ -8,7 +8,7 @@ const getNextProductId = async () => {
   if (latestProduct) {
     return latestProduct.productId + 1;
   } else {
-    return 2000;
+    return 2325;
   }
 };
 
