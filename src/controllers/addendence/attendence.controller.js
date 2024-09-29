@@ -115,7 +115,7 @@ exports.getAllAttendances = async (req, res) => {
 // get attendance
 // get attendance with pagination
 exports.getAttendanceWithUserId = async (req, res) => {
-  const { userId, startDate, endDate, month, page = 1, limit = 1 } = req.query; // Default page = 1, limit = 10
+  const { userId, startDate, endDate, month, page = 1, limit = 10 } = req.query; // Default page = 1, limit = 10
   
   try {
     // Initialize the query object
