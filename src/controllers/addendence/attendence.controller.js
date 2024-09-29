@@ -90,7 +90,6 @@ exports.getAllAttendances = async (req, res) => {
         query.createdAt = { $gte: startDate, $lt: endDate };
       }
     }
-    console.log(query);
 
     // Fetch the data from MongoDB with pagination
     const attendances = await AttendanceModel.find(query)
@@ -113,8 +112,11 @@ exports.getAllAttendances = async (req, res) => {
   }
 };
 
+// get attendance
+// get attendance with pagination
 exports.getAttendanceWithUserId = async (req, res) => {
-  const { userId, startDate, endDate, month } = req.query;
+  const { userId, startDate, endDate, month, page = 1, limit = 10 } = req.query; // Default page = 1, limit = 10
+  
   try {
     // Initialize the query object
     const query = {};
@@ -138,22 +140,42 @@ exports.getAttendanceWithUserId = async (req, res) => {
     } else if (startDate && endDate) {
       // If a date range is provided, use it to query records
       query.date = {
-        $gte: startDate,
-        $lte: endDate,
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
       };
     }
 
-    // Fetch attendance data based on the constructed query
-    const attendance = await AttendanceModel.find(query).sort({
-      createdAt: -1,
-    });
+    // Calculate pagination values
+    const pageNum = parseInt(page, 10) || 1; // Current page number
+    const limitNum = parseInt(limit, 10) || 10; // Records per page
+    const skip = (pageNum - 1) * limitNum; // Records to skip
 
-    res.json(attendance);
+    // Fetch the total number of records matching the query
+    const totalRecords = await AttendanceModel.countDocuments(query);
+
+    // Fetch attendance data with pagination
+    const attendance = await AttendanceModel.find(query)
+      .sort({ createdAt: -1 }) // Sort in descending order by creation date
+      .skip(skip) // Skip records for pagination
+      .limit(limitNum); // Limit the number of records per page
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalRecords / limitNum);
+
+    // Send the paginated response
+    res.json({
+      attendance, // The attendance records for the current page
+      totalRecords, // Total number of records
+      totalPages, // Total number of pages
+      currentPage: pageNum, // Current page number
+      limit: limitNum, // Limit (records per page)
+    });
   } catch (error) {
     console.error(error); // Log the error for debugging purposes
     res.status(500).json({ error: 'Failed to fetch attendance data' });
   }
 };
+
 
 // delete all attendances
 exports.deleteAllAttendance = async (req, res) => {
@@ -185,12 +207,10 @@ exports.deleteAttendance = async (req, res) => {
       .status(201)
       .json({ message: 'Attendance record deleted successfully.', result });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        message: 'Failed to delete attendance record.',
-        error: err.message,
-      });
+    res.status(500).json({
+      message: 'Failed to delete attendance record.',
+      error: err.message,
+    });
   }
 };
 
@@ -274,6 +294,7 @@ exports.updateAttendance = async (req, res) => {
   }
 };
 
+// edit attendance
 exports.editAttendance = async (req, res) => {
   const id = req.params.id;
   const attendanceData = req.body;
@@ -385,5 +406,45 @@ exports.attendanceCounts = async (req, res) => {
   } catch (error) {
     // Handle any errors that occurred
     res.status(500).json({ message: 'Error retrieving user counts', error });
+  }
+};
+
+// get casual leave count from attendance data
+exports.getCasualCountById = async (req, res) => {
+  const id = req.params.id;
+  const currentDate = new Date();
+
+  try {
+    // Find user by id to get the join date
+    const userData = await UserModel.findOne({ userId: id });
+    if (!userData) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const joinDate = new Date(userData?.personalInfo?.joinDate);
+    const yearsPassed = Math.floor(
+      (currentDate - joinDate) / (1000 * 60 * 60 * 24 * 365)
+    ); // Calculate years passed since joining
+
+    // Calculate the start date and end date for the current year
+    let startDate = new Date(joinDate);
+    startDate.setFullYear(joinDate.getFullYear() + yearsPassed);
+
+    let endDate = new Date(startDate);
+    endDate.setFullYear(startDate.getFullYear() + 1);
+    endDate.setHours(23, 59, 59, 999);
+
+    // Query to count casual leaves within the calculated date range
+    const casualCount = await AttendanceModel.countDocuments({
+      userId: id,
+      casual: true,
+      createdAt: { $gte: startDate, $lt: endDate },
+    });
+
+    return res.status(200).json({ casualCount, year: yearsPassed + 1 });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: 'Error getting casual leave count', error });
   }
 };
