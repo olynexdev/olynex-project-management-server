@@ -75,9 +75,9 @@ async function processAttendanceLogsInBatch(logs) {
 
     if (existingRecord) {
       // Update inGoing or outGoing based on time
-      if (recordTime.isBefore(moment('13:30', 'HH:mm')) && !existingRecord.inGoing) {
+      if (recordTime.isBefore(moment('13:00', 'HH:mm')) && !existingRecord.inGoing) {
         existingRecord.inGoing = log.recordTime;
-      } else if (recordTime.isAfter(moment('15:00', 'HH:mm'))) {
+      } else if (recordTime.isAfter(moment('14:10', 'HH:mm'))) {
         existingRecord.outGoing = log.recordTime;
       }
       updatePromises.push(existingRecord.save());
@@ -85,8 +85,8 @@ async function processAttendanceLogsInBatch(logs) {
       // Prepare new attendance record for batch insert
       recordsToInsert.push({
         userId: log.deviceUserId,
-        inGoing: recordTime.isBefore(moment('13:30', 'HH:mm')) ? log.recordTime : null,
-        outGoing: recordTime.isAfter(moment('15:00', 'HH:mm')) ? log.recordTime : null,
+        inGoing: recordTime.isBefore(moment('13:00', 'HH:mm')) ? log.recordTime : null,
+        outGoing: recordTime.isAfter(moment('14:10', 'HH:mm')) ? log.recordTime : null,
         OfficeWorking: "00",
         date: recordTime.format("YYYY-MM-DD"),
         note: "Present in this user, (Created by ZkTeco finger device)",
