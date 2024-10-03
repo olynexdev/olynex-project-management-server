@@ -82,6 +82,7 @@ async function processAttendanceLogsInBatch(logs) {
       }
       updatePromises.push(existingRecord.save());
     } else {
+      
       // Prepare new attendance record for batch insert
       recordsToInsert.push({
         userId: log.deviceUserId,

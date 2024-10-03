@@ -116,7 +116,7 @@ exports.getAllAttendances = async (req, res) => {
 // get attendance with pagination
 exports.getAttendanceWithUserId = async (req, res) => {
   const { userId, startDate, endDate, month, page = 1, limit = 10 } = req.query; // Default page = 1, limit = 10
-  
+  console.log( "start date & end date", startDate, endDate);
   try {
     // Initialize the query object
     const query = {};
@@ -132,6 +132,7 @@ exports.getAttendanceWithUserId = async (req, res) => {
       const startDate = new Date(`${year}-${month}-01T00:00:00.000Z`);
       // Calculate the last day of the month
       const endDate = new Date(year, parseInt(month), 0, 23, 59, 59, 999);
+
       // Query for records within the selected month
       query.createdAt = {
         $gte: startDate,
@@ -140,8 +141,8 @@ exports.getAttendanceWithUserId = async (req, res) => {
     } else if (startDate && endDate) {
       // If a date range is provided, use it to query records
       query.date = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
+        $gte: startDate,
+        $lte: endDate,
       };
     }
 
