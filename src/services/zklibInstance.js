@@ -39,6 +39,7 @@ async function fetchAttendanceLogs() {
     }
   } catch (err) {
     console.error('Error fetching attendance logs:', err.message);
+    connectToZKLib()
   }
 }
 
@@ -82,7 +83,7 @@ async function processAttendanceLogsInBatch(logs) {
       }
       updatePromises.push(existingRecord.save());
     } else {
-      
+
       // Prepare new attendance record for batch insert
       recordsToInsert.push({
         userId: log.deviceUserId,
@@ -117,11 +118,11 @@ async function initializeZKLib() {
   let retries = 0;
 
   if (!connected) {
-    console.log('Retrying connection...');
+    console.log('Retrying zklib connection...');
   }
 
   while (!connected && retries < maxRetries) {
-    await new Promise(resolve => setTimeout(resolve, 60000)); // Retry every 60 seconds
+    await new Promise(resolve => setTimeout(resolve, 10000)); // Retry every 10 seconds
     connected = await connectToZKLib();
     retries++;
     console.log(`Retry attempt: ${retries}`);
