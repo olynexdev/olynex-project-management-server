@@ -14,7 +14,11 @@ async function connectToZKLib() {
     console.log('Connected to ZKTeco device...');
     return true;
   } catch (err) {
-    console.error('Error connecting to ZKTeco device:', err.message, `[IP - ${err?.ip}]`);
+    console.error(
+      'Error connecting to ZKTeco device:',
+      err.message,
+      `[IP - ${err?.ip}]`
+    );
     return false;
   }
 }
@@ -25,10 +29,14 @@ async function fetchAttendanceLogs() {
     const logs = await zkInstance.getAttendances();
 
     if (logs && Array.isArray(logs.data)) {
-      const newLogs = logs.data.filter(log => new Date(log.recordTime) > lastSeenTimestamp);
+      const newLogs = logs.data.filter(
+        log => new Date(log.recordTime) > lastSeenTimestamp
+      );
 
       if (newLogs.length > 0) {
-        const latestRecordTime = new Date(Math.max(...newLogs.map(log => new Date(log.recordTime))));
+        const latestRecordTime = new Date(
+          Math.max(...newLogs.map(log => new Date(log.recordTime)))
+        );
         lastSeenTimestamp = latestRecordTime;
 
         // Process all logs in batches
@@ -39,7 +47,7 @@ async function fetchAttendanceLogs() {
     }
   } catch (err) {
     console.error('Error fetching attendance logs:', err.message);
-    connectToZKLib()
+    connectToZKLib();
   }
 }
 
@@ -52,7 +60,9 @@ async function processAttendanceLogsInBatch(logs) {
     const recordTime = moment(log.recordTime);
 
     // Skip records between 1:30 PM and 2:45 PM
-    if (recordTime.isBetween(moment('13:30', 'HH:mm'), moment('14:45', 'HH:mm'))) {
+    if (
+      recordTime.isBetween(moment('13:30', 'HH:mm'), moment('14:45', 'HH:mm'))
+    ) {
       console.log('Skipping time between 1:30 PM and 2:45 PM');
       continue;
     }
@@ -76,22 +86,28 @@ async function processAttendanceLogsInBatch(logs) {
 
     if (existingRecord) {
       // Update inGoing or outGoing based on time
-      if (recordTime.isBefore(moment('13:00', 'HH:mm')) && !existingRecord.inGoing) {
+      if (
+        recordTime.isBefore(moment('13:00', 'HH:mm')) &&
+        !existingRecord.inGoing
+      ) {
         existingRecord.inGoing = log.recordTime;
       } else if (recordTime.isAfter(moment('14:10', 'HH:mm'))) {
         existingRecord.outGoing = log.recordTime;
       }
       updatePromises.push(existingRecord.save());
     } else {
-
       // Prepare new attendance record for batch insert
       recordsToInsert.push({
         userId: log.deviceUserId,
-        inGoing: recordTime.isBefore(moment('13:00', 'HH:mm')) ? log.recordTime : null,
-        outGoing: recordTime.isAfter(moment('14:10', 'HH:mm')) ? log.recordTime : null,
-        OfficeWorking: "00",
-        date: recordTime.format("YYYY-MM-DD"),
-        note: "Present in this user, (Created by ZkTeco finger device)",
+        inGoing: recordTime.isBefore(moment('13:00', 'HH:mm'))
+          ? log.recordTime
+          : null,
+        outGoing: recordTime.isAfter(moment('14:10', 'HH:mm'))
+          ? log.recordTime
+          : null,
+        OfficeWorking: '00',
+        date: recordTime.format('YYYY-MM-DD'),
+        note: 'Present in this user, (Created by ZkTeco finger device)',
         casual: false,
         overTime: 0,
       });
@@ -107,7 +123,9 @@ async function processAttendanceLogsInBatch(logs) {
   // Wait for all updates to finish
   if (updatePromises.length > 0) {
     await Promise.all(updatePromises);
-    console.log(`Updated ${updatePromises.length} existing attendance records.`);
+    console.log(
+      `Updated ${updatePromises.length} existing attendance records.`
+    );
   }
 }
 
