@@ -32,7 +32,8 @@ exports.getTasks = async (req, res) => {
     // Find tasks with pagination and filtering
     const tasks = await TasksModel.find(filter)
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
     // Calculate total pages
     const totalPages = Math.ceil(totalTasks / limit);
     // Send the paginated tasks with total pages

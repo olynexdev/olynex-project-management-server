@@ -70,8 +70,7 @@ exports.getAllAttendances = async (req, res) => {
       const endNewDate = new Date(selectedDate.setUTCHours(23, 59, 59, 999)); // End of the selected day
 
       query.createdAt = { $gte: startNewDate, $lt: endNewDate };
-      query.userId = id; // Ensure it's filtering by the user's ID
-      console.log('inside of date and user', query, selectedDate);
+      query.userId = id;
     }
 
     // 3. If month=something, date='null', search=empty or 'null' => All users' specific month data
@@ -80,7 +79,6 @@ exports.getAllAttendances = async (req, res) => {
       (dateQuery == 'null' || dateQuery == 'undefined') &&
       (searchQuery == 'null' || searchQuery === '')
     ) {
-      console.log('object', query);
       if (monthMap[monthQuery] !== undefined) {
         const selectedMonth = monthMap[monthQuery];
         const currentYear = new Date().getFullYear();
@@ -94,7 +92,8 @@ exports.getAllAttendances = async (req, res) => {
     // Fetch the data from MongoDB with pagination
     const attendances = await AttendanceModel.find(query)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     // Get total count for pagination
     const totalRecords = await AttendanceModel.countDocuments(query);
@@ -116,7 +115,7 @@ exports.getAllAttendances = async (req, res) => {
 // get attendance with pagination
 exports.getAttendanceWithUserId = async (req, res) => {
   const { userId, startDate, endDate, month, page = 1, limit = 10 } = req.query; // Default page = 1, limit = 10
-  console.log( "start date & end date", startDate, endDate);
+
   try {
     // Initialize the query object
     const query = {};
@@ -176,7 +175,6 @@ exports.getAttendanceWithUserId = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch attendance data' });
   }
 };
-
 
 // delete all attendances
 exports.deleteAllAttendance = async (req, res) => {
