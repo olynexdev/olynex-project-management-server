@@ -222,17 +222,54 @@ exports.postAttendance = async (req, res) => {
   }
 
   try {
-    const result = await AttendanceModel.create(attendance);
-    res
-      .status(201)
-      .send({ message: 'Attendance posted successfully!', data: result });
+    if (attendance.casual === true) {
+      // Check if attendance for the user and date already exists
+      const existingRecord = await AttendanceModel.findOne({
+        userId: attendance.userId,
+        date: attendance.date,
+      });
+
+      if (existingRecord) {
+        // Update the existing casual attendance record
+        existingRecord.inGoing = attendance.inGoing || existingRecord.inGoing;
+        existingRecord.outGoing =
+          attendance.outGoing || existingRecord.outGoing;
+        existingRecord.note = attendance.note || existingRecord.note;
+        existingRecord.OfficeWorking =
+          attendance.OfficeWorking || existingRecord.OfficeWorking;
+        existingRecord.casual = attendance.casual; // Should remain true
+        existingRecord.overTime =
+          attendance.overTime || existingRecord.overTime;
+
+        // Save the updated record
+        const updatedResult = await existingRecord.save();
+        return res.status(200).send({
+          message: 'Casual attendance updated successfully!',
+          data: updatedResult,
+        });
+      } else {
+        // If no record exists, create a new one
+        const newCasualRecord = await AttendanceModel.create(attendance);
+        return res.status(201).send({
+          message: 'New casual attendance posted successfully!',
+          data: newCasualRecord,
+        });
+      }
+    } else {
+      // Regular attendance handling (non-casual)
+      const result = await AttendanceModel.create(attendance);
+      return res.status(201).send({
+        message: 'Attendance posted successfully!',
+        data: result,
+      });
+    }
   } catch (err) {
     if (err.name === 'ValidationError') {
       return res
         .status(400)
         .send({ message: 'Validation error', details: err.message });
     }
-    res
+    return res
       .status(500)
       .send({ message: 'Attendance post failed!', error: err.message });
   }
