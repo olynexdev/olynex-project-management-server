@@ -116,6 +116,16 @@ async function fetchAttendanceLogs() {
       const newLogs = logs.data.filter(
         log => new Date(log.recordTime) > lastSeenTimestamp
       );
+      // Filter logs for the date 03-07-2024
+      // const targetDate = new Date('2024-09-14');
+      // const targetDateStart = new Date(targetDate.setHours(0, 0, 0, 0));
+      // const targetDateEnd = new Date(targetDate.setHours(23, 59, 59, 999));
+
+      // const newLogs2 = logs.data.filter((log) => {
+      //   const logDate = new Date(log.recordTime);
+      //   return logDate >= targetDateStart && logDate <= targetDateEnd;
+      // });
+      // console.log("log 2",newLogs2);
 
       if (newLogs.length > 0) {
         const latestRecordTime = new Date(
@@ -156,7 +166,6 @@ async function checkMissingUsers() {
   const missingLogs = todayLogs.filter(
     log => !postedUserIds.includes(log.deviceUserId)
   );
-  console.log(missingLogs);
 
   // Insert missing users into DB based on log record time (with conditions)
   for (const log of missingLogs) {
@@ -174,10 +183,9 @@ async function checkMissingUsers() {
   console.log(`Checked and posted missing users for ${today}`);
 }
 
-// First cron job: Runs every hour between 9 AM and 5 PM
+// Cron job to run every hour to check missing users
 cron.schedule('0 9-17 * * *', async () => {
   console.log('Running hourly cron job between 9 AM and 5 PM...');
-
   const connected = await connectToZKLib();
   if (connected) {
     await checkMissingUsers();
@@ -186,10 +194,8 @@ cron.schedule('0 9-17 * * *', async () => {
   }
 });
 
-// Second cron job: Runs every 5 minutes outside of 9 AM to 5 PM
 cron.schedule('*/5 0-8,18-23 * * *', async () => {
   console.log('Running 5-minute cron job outside of 9 AM to 5 PM...');
-
   const connected = await connectToZKLib();
   if (connected) {
     await checkMissingUsers();

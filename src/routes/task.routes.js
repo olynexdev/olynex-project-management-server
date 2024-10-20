@@ -5,6 +5,7 @@ const {
   getTask,
   getRunningTask,
   searchTask,
+  deleteTask,
 } = require('../controllers/tasks/task.controller');
 const {
   employeeAcceptTask,
@@ -35,6 +36,7 @@ const { postImage, upload } = require('../controllers/tasks/taskImageUploadContr
 const router = express.Router();
 
 router.post('/post-task', verifyToken, addTask); // add new task
+router.delete('/delete-task/:id', verifyToken, deleteTask); // delete task
 router.get('/get-tasks', verifyToken, getTasks); // get all task
 router.get('/get-task/:id', verifyToken, verifyTaskAccess, getTask); // get an task
 router.get('/get-running-task/:userId', verifyToken, getRunningTask); // get running task

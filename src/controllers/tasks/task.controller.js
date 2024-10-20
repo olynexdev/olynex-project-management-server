@@ -1,5 +1,6 @@
-const TasksModel = require('../../models/tasks.model');
-const UserModel = require('../../models/users.model');
+const ProductListingModel = require("../../models/productListing.model");
+const TasksModel = require("../../models/tasks.model");
+const UserModel = require("../../models/users.model");
 
 exports.addTask = async (req, res) => {
   const body = req.body; // req to frontend
@@ -8,7 +9,28 @@ exports.addTask = async (req, res) => {
     const result = await TasksModel.create(body);
     res.status(201).send(result);
   } catch (error) {
-    res.status(500).send({ message: 'Task Adding Error!', error });
+    res.status(500).send({ message: "Task Adding Error!", error });
+  }
+};
+
+// delete specific task with _id
+exports.deleteTask = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await TasksModel.deleteOne({ taskId: id });
+    console.log("result", result);
+     await ProductListingModel.updateOne(
+      { productId: id },
+      { used: false }
+    );
+
+    if (result.deletedCount === 0) {
+      return res.status(404).send({ message: "Task not found" });
+    }
+
+    res.status(200).send({ message: "Task successfully deleted", result });
+  } catch (err) {
+    res.status(500).send({ message: `Task delete failed: ${err}` });
   }
 };
 
@@ -23,7 +45,7 @@ exports.getTasks = async (req, res) => {
       ? {
           $or: [
             { approvalChain: { $elemMatch: { userId: numericUserId } } },
-            { 'taskReceiver.userId': numericUserId },
+            { "taskReceiver.userId": numericUserId },
           ],
         }
       : {};
@@ -42,7 +64,7 @@ exports.getTasks = async (req, res) => {
       totalPages,
     });
   } catch (err) {
-    res.status(500).send({ message: 'Failed to retrieve tasks', err });
+    res.status(500).send({ message: "Failed to retrieve tasks", err });
   }
 };
 
@@ -54,15 +76,15 @@ exports.getRunningTask = async (req, res) => {
     const task = await TasksModel.findOne({
       $or: [
         {
-          'taskReceiver.userId': userId,
-          status: { $in: ['progress'] },
+          "taskReceiver.userId": userId,
+          status: { $in: ["progress"] },
         },
         // return data when math aprovalChain userid
         {
           approvalChain: {
             $elemMatch: {
               userId: userId,
-              status: { $in: ['pending', 'rejected'] },
+              status: { $in: ["pending", "rejected"] },
             },
           },
         },
@@ -74,13 +96,13 @@ exports.getRunningTask = async (req, res) => {
     if (!task) {
       return res.json({
         success: false,
-        message: 'No running task found for this employee',
+        message: "No running task found for this employee",
       });
     }
     res.status(200).json({ success: true, task });
   } catch (error) {
     console.error("Error fetching employee's running task:", error);
-    res.status(500).json({ success: false, message: 'Server Error' });
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
@@ -92,14 +114,14 @@ exports.getTask = async (req, res) => {
 
     if (!task) {
       // Return 404 if task is not found
-      return res.status(404).json({ message: 'Task not found' });
+      return res.status(404).json({ message: "Task not found" });
     }
 
     // Return the found task
     res.status(200).json(task);
   } catch (error) {
     // Handle any errors that occurred
-    res.status(500).json({ message: 'Error retrieving task', error });
+    res.status(500).json({ message: "Error retrieving task", error });
   }
 };
 
@@ -109,14 +131,14 @@ exports.searchTask = async (req, res) => {
   const userId = req.query.userId;
 
   if (!search) {
-    return res.status(400).json({ message: 'Search query is required' });
+    return res.status(400).json({ message: "Search query is required" });
   }
 
   try {
-    const regex = new RegExp(search, 'i'); // Case-insensitive partial match
+    const regex = new RegExp(search, "i"); // Case-insensitive partial match
     const searchNumber = Number(search);
 
-    if (userRole === 'hr') {
+    if (userRole === "hr") {
       const users = await UserModel.aggregate([
         {
           $match: {
@@ -124,13 +146,13 @@ exports.searchTask = async (req, res) => {
               $or: [
                 {
                   $regexMatch: {
-                    input: { $toString: '$userId' }, // Converting userId to string for regex matching
+                    input: { $toString: "$userId" }, // Converting userId to string for regex matching
                     regex: regex,
                   },
                 },
                 {
                   $regexMatch: {
-                    input: '$fullName',
+                    input: "$fullName",
                     regex: regex,
                   },
                 },
@@ -165,28 +187,28 @@ exports.searchTask = async (req, res) => {
 
     // Add role-based filtering
     switch (userRole) {
-      case 'employee':
-        query['taskReceiver.userId'] = userId; // Employees see only their tasks
+      case "employee":
+        query["taskReceiver.userId"] = userId; // Employees see only their tasks
         break;
-      case 'project_manager':
-      case 'mockup':
-      case 'seo':
-      case 'delivery':
+      case "project_manager":
+      case "mockup":
+      case "seo":
+      case "delivery":
         query.approvalChain = {
           $elemMatch: {
             userId: userId,
             designation: {
-              $in: ['project_manager', 'mockup', 'seo', 'delivery'],
+              $in: ["project_manager", "mockup", "seo", "delivery"],
             }, // few Employees see only their tasks by designation
           },
         };
         break;
-      case 'co_ordinator':
-      case 'ceo':
+      case "co_ordinator":
+      case "ceo":
         // Coordinators and CEOs see all tasks
         break;
       default:
-        return res.status(403).json({ message: 'Unauthorized role' });
+        return res.status(403).json({ message: "Unauthorized role" });
     }
 
     const tasks = await TasksModel.find(query)
@@ -194,6 +216,6 @@ exports.searchTask = async (req, res) => {
       .limit(4); // Limit to 4 results
     res.json(tasks);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching tasks' });
+    res.status(500).json({ message: "Error fetching tasks" });
   }
 };
