@@ -1,9 +1,12 @@
 const ProductListingModel = require('../../models/productListing.model');
+const TaskModel = require('../../models/tasks.model');
 
 // Assuming you have a ProductListingModel with a field 'productId'
 const getNextProductId = async () => {
   // Get the product with the highest productId
-  const latestProduct = await ProductListingModel.findOne().sort({ productId: -1 });
+  const latestProduct = await ProductListingModel.findOne().sort({
+    productId: -1,
+  });
 
   // Check if a product exists
   if (latestProduct) {
@@ -25,7 +28,7 @@ exports.addProduct = async (req, res) => {
 
     // Save the new product to the database
     const result = await ProductListingModel.create(newProduct);
-    
+
     // Send the created product as a response
     res.status(201).send(result);
   } catch (error) {
@@ -33,7 +36,6 @@ exports.addProduct = async (req, res) => {
     res.status(500).send({ message: 'Product Add Error!', error });
   }
 };
-
 
 // get all products data with pagination and categories
 exports.getProducts = async (req, res) => {
@@ -94,13 +96,37 @@ exports.deleteProduct = async (req, res) => {
 
 // Update a specific product by ID
 exports.updateProduct = async (req, res) => {
-  const productId = req.params.id;
+  const id = req.params.id;
   const updateData = req.body;
+  const {
+    keywords,
+    template_size,
+    number_of_pages,
+    productId,
+    category,
+    template_category,
+    department,
+    title,
+    color_space,
+  } = updateData;
   try {
-    const result = await ProductListingModel.updateOne(
-      { _id: productId },
-      updateData
-    );
+    const result = await ProductListingModel.updateOne({ _id: id }, updateData);
+    if (keywords || template_size || number_of_pages) {
+      const result = await TaskModel.updateOne(
+        { taskId: productId },
+        {
+          keywords: keywords,
+          pages: number_of_pages,
+          size: template_size,
+          category,
+          categoryNumber: template_category,
+          department,
+          title,
+          colorSpace: color_space,
+        }
+      );
+      console.log(result);
+    }
     res.status(200).send(result);
   } catch (err) {
     res.status(500).send({ message: 'Error updating product', error: err });
