@@ -3,6 +3,7 @@ const UserModel = require("../../models/users.model");
 
 exports.addTask = async (req, res) => {
   const body = req.body; // req to frontend
+
   try {
     // Create the new task
     const result = await TasksModel.create(body);

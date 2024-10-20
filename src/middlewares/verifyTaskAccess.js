@@ -32,9 +32,7 @@ const verifyTaskAccess = async (req, res, next) => {
       const isAuthorized =
         task.taskCreator.userId === userId ||
         task.taskReceiver.userId === userId ||
-        task.approvalChain.some(approver => approver.userId === userId) ||
-        user?.personalInfo?.designation === 'mockup'
-        ;
+        task.approvalChain.some(approver => approver.userId === userId);
 
       if (isAuthorized) {
         console.log(
