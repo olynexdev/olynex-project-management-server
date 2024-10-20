@@ -10,7 +10,7 @@ const taskSchema = new mongoose.Schema(
     description: { type: String},
     colorSpace: { type: String, required: true },
     pages: { type: String, required: true },
-    size: [],
+    size:  String,
     taskStartDate: { type: String, required: true },
     file_types: [],
     keywords: { type: String, required: true },
