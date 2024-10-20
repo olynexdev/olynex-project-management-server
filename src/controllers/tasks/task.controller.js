@@ -1,36 +1,38 @@
+const ProductListingModel = require("../../models/productListing.model");
 const TasksModel = require("../../models/tasks.model");
 const UserModel = require("../../models/users.model");
 
 exports.addTask = async (req, res) => {
   const body = req.body; // req to frontend
-
   try {
     // Create the new task
     const result = await TasksModel.create(body);
-    res.status(200).send(result);
+    res.status(201).send(result);
   } catch (error) {
     res.status(500).send({ message: "Task Adding Error!", error });
   }
 };
 
-
 // delete specific task with _id
 exports.deleteTask = async (req, res) => {
   const id = req.params.id;
-  console.log("task id:",id);
   try {
-    const result = await TasksModel.deleteOne({ _id: id });
-    
+    const result = await TasksModel.deleteOne({ taskId: id });
+    console.log("result", result);
+     await ProductListingModel.updateOne(
+      { productId: id },
+      { used: false }
+    );
+
     if (result.deletedCount === 0) {
-      return res.status(404).send({ message: 'Task not found' });
+      return res.status(404).send({ message: "Task not found" });
     }
-    
-    res.status(200).send({ message: 'Task successfully deleted', result });
+
+    res.status(200).send({ message: "Task successfully deleted", result });
   } catch (err) {
     res.status(500).send({ message: `Task delete failed: ${err}` });
   }
 };
-
 
 exports.getTasks = async (req, res) => {
   try {
