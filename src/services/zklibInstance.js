@@ -174,16 +174,27 @@ async function checkMissingUsers() {
   console.log(`Checked and posted missing users for ${today}`);
 }
 
-// Cron job to run every hour to check missing users
-cron.schedule('0 * * * *', async () => {
-  console.log('Running hourly cron job to check for missing attendance...');
+// First cron job: Runs every hour between 9 AM and 5 PM
+cron.schedule('0 9-17 * * *', async () => {
+  console.log('Running hourly cron job between 9 AM and 5 PM...');
 
-  // Ensure connection to ZKTeco device
   const connected = await connectToZKLib();
   if (connected) {
-    await checkMissingUsers(); // Check missing users and post them
+    await checkMissingUsers();
   } else {
-    console.error('Failed to connect to ZKTeco device for cron job.');
+    console.error('Failed to connect to ZKTeco device.');
+  }
+});
+
+// Second cron job: Runs every 5 minutes outside of 9 AM to 5 PM
+cron.schedule('*/5 0-8,18-23 * * *', async () => {
+  console.log('Running 5-minute cron job outside of 9 AM to 5 PM...');
+
+  const connected = await connectToZKLib();
+  if (connected) {
+    await checkMissingUsers();
+  } else {
+    console.error('Failed to connect to ZKTeco device.');
   }
 });
 
