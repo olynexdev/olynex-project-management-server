@@ -116,6 +116,16 @@ async function fetchAttendanceLogs() {
       const newLogs = logs.data.filter(
         (log) => new Date(log.recordTime) > lastSeenTimestamp
       );
+      // Filter logs for the date 03-07-2024
+      // const targetDate = new Date('2024-09-14');
+      // const targetDateStart = new Date(targetDate.setHours(0, 0, 0, 0));
+      // const targetDateEnd = new Date(targetDate.setHours(23, 59, 59, 999));
+
+      // const newLogs2 = logs.data.filter((log) => {
+      //   const logDate = new Date(log.recordTime);
+      //   return logDate >= targetDateStart && logDate <= targetDateEnd;
+      // });
+      // console.log("log 2",newLogs2);
 
       if (newLogs.length > 0) {
         const latestRecordTime = new Date(
