@@ -1,5 +1,5 @@
-const ProductListingModel = require("../../models/productListing.model");
-const TaskModel = require("../../models/tasks.model");
+const ProductListingModel = require('../../models/productListing.model');
+const TaskModel = require('../../models/tasks.model');
 
 // Assuming you have a ProductListingModel with a field 'productId'
 const getNextProductId = async () => {
@@ -96,18 +96,37 @@ exports.deleteProduct = async (req, res) => {
 
 // Update a specific product by ID
 exports.updateProduct = async (req, res) => {
-  const productId = req.params.id;
+  const id = req.params.id;
   const updateData = req.body;
-  const { keywords, template_size, number_of_pages } = updateData;
+  const {
+    keywords,
+    template_size,
+    number_of_pages,
+    productId,
+    category,
+    template_category,
+    department,
+    title,
+    color_space,
+  } = updateData;
   try {
-    const result = await ProductListingModel.updateOne(
-      { _id: productId },
-      updateData
-    );
-    await TaskModel.updateOne(
-      { _id: productId },
-      { keywords: keywords, pages: number_of_pages, size: template_size }
-    );
+    const result = await ProductListingModel.updateOne({ _id: id }, updateData);
+    if (keywords || template_size || number_of_pages) {
+      const result = await TaskModel.updateOne(
+        { taskId: productId },
+        {
+          keywords: keywords,
+          pages: number_of_pages,
+          size: template_size,
+          category,
+          categoryNumber: template_category,
+          department,
+          title,
+          colorSpace: color_space,
+        }
+      );
+      console.log(result);
+    }
     res.status(200).send(result);
   } catch (err) {
     res.status(500).send({ message: "Error updating product", error: err });
