@@ -65,29 +65,29 @@ exports.employeeSubmitTask = async (req, res) => {
       return res.status(404).send({ message: 'Task not found' });
     }
 
-    if (images && images.length > 0) {
-      // Check if an entry already exists for this taskId in ProjectImagesModal
-      let existingImagesEntry = await ProjectImagesModal.findOne({
-        taskId: task?.taskId,
-      });
+   // Handle images
+   if (images && images.length > 0) {
+    // Check if an entry already exists for this taskId in ProjectImagesModal
+    let existingImagesEntry = await ProjectImagesModal.findOne({
+      taskId: task?.taskId,
+    });
 
-      if (existingImagesEntry) {
-        // If the entry exists, append new images to the existing array
-        existingImagesEntry.images.push(...images);
-        await existingImagesEntry.save();
-      } else {
-        // If no entry exists, create a new one
-        const postInfo = {
-          taskReceiver: {
-            userId: task?.taskReceiver?.userId,
-            name: task?.taskReceiver?.name,
-          },
-          taskId: task?.taskId,
-          images: images, // Directly store the new images
-        };
-        await ProjectImagesModal.create(postInfo);
-      }
+    if (existingImagesEntry) {
+      // Delete previous images by clearing the images array or deleting the entire entry
+      await ProjectImagesModal.findByIdAndDelete(existingImagesEntry._id);
     }
+
+    // Create a new entry for the images
+    const postInfo = {
+      taskReceiver: {
+        userId: task?.taskReceiver?.userId,
+        name: task?.taskReceiver?.name,
+      },
+      taskId: task?.taskId,
+      images: images, // Directly store the new images
+    };
+    await ProjectImagesModal.create(postInfo);
+  }
 
     // Update approvalChain if necessary
     if (approvalChainUpdate) {
