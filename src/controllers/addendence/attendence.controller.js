@@ -24,7 +24,7 @@ exports.getAllAttendances = async (req, res) => {
   const dateQuery = req.query.date; // Specific date (format: 2024-08-24T05:41:31.659Z)
 
   const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 10;
+  const limit = parseInt(req.query.limit, 10) || 100;
   const skip = (page - 1) * limit;
 
   const id = parseInt(searchQuery, 10);
