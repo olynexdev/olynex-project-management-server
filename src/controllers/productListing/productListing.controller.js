@@ -10,11 +10,11 @@ const getNextProductId = async () => {
 
   // Check if a product exists
   if (latestProduct) {
-    // If the latest productId is less than 2325, return 2325; otherwise, return latestProduct.productId + 1
-    return latestProduct.productId >= 2325 ? latestProduct.productId + 1 : 2325;
+    // If the latest productId is less than 2620, return 2620; otherwise, return latestProduct.productId + 1
+    return latestProduct.productId >= 2620 ? latestProduct.productId + 1 : 2620;
   } else {
-    // If no products exist, return 2325 as the first productId
-    return 2325;
+    // If no products exist, return 2620 as the first productId
+    return 2620;
   }
 };
 
@@ -33,14 +33,14 @@ exports.addProduct = async (req, res) => {
     res.status(201).send(result);
   } catch (error) {
     // Catch any errors and return a 500 status with the error message
-    res.status(500).send({ message: "Product Add Error!", error });
+    res.status(500).send({ message: 'Product Add Error!', error });
   }
 };
 
 // get all products data with pagination and categories
 exports.getProducts = async (req, res) => {
   try {
-    const { page, category = "" } = req.query; //
+    const { page, category = '' } = req.query; //
     const limit = 10; // page limit
     const skip = (page - 1) * limit; // page skip
 
@@ -63,7 +63,7 @@ exports.getProducts = async (req, res) => {
 
     res.status(201).send({ products, totalPages });
   } catch (err) {
-    res.status(500).send({ message: "Products get Error!", err });
+    res.status(500).send({ message: 'Products get Error!', err });
   }
 };
 
@@ -74,7 +74,7 @@ exports.getProduct = async (req, res) => {
     const result = await ProductListingModel.findOne({ productId });
     res.status(201).send(result);
   } catch (err) {
-    res.status(500).send({ message: "Product get Error!", err });
+    res.status(500).send({ message: 'Product get Error!', err });
   }
 };
 
@@ -85,12 +85,12 @@ exports.deleteProduct = async (req, res) => {
     // Use Mongoose deleteOne to delete the product
     const result = await ProductListingModel.deleteOne({ _id: fileTypeId });
     if (result.deletedCount === 1) {
-      res.status(200).send({ message: "Product deleted successfully" });
+      res.status(200).send({ message: 'Product deleted successfully' });
     } else {
-      res.status(404).send({ message: "Product not found" });
+      res.status(404).send({ message: 'Product not found' });
     }
   } catch (err) {
-    res.status(500).send({ message: "Error deleting Product", error: err });
+    res.status(500).send({ message: 'Error deleting Product', error: err });
   }
 };
 
@@ -129,7 +129,7 @@ exports.updateProduct = async (req, res) => {
     }
     res.status(200).send(result);
   } catch (err) {
-    res.status(500).send({ message: "Error updating product", error: err });
+    res.status(500).send({ message: 'Error updating product', error: err });
   }
 };
 
@@ -151,7 +151,7 @@ const getAllProductsCount = async () => {
   const productsByCategory = await ProductListingModel.aggregate([
     {
       $group: {
-        _id: "$category",
+        _id: '$category',
         count: { $sum: 1 },
       },
     },
@@ -170,7 +170,7 @@ exports.productsCount = async (req, res) => {
     const month = req.params.month;
     const currentYear = new Date().getFullYear();
 
-    if (month === "All") {
+    if (month === 'All') {
       const allData = await getAllProductsCount();
       return res.status(201).json(allData);
     }
@@ -206,7 +206,7 @@ exports.productsCount = async (req, res) => {
       { $match: monthQuery },
       {
         $group: {
-          _id: "$category",
+          _id: '$category',
           count: { $sum: 1 },
         },
       },
@@ -219,6 +219,6 @@ exports.productsCount = async (req, res) => {
       productsByCategory,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving product counts", error });
+    res.status(500).json({ message: 'Error retrieving product counts', error });
   }
 };
