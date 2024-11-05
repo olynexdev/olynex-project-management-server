@@ -12,7 +12,7 @@ exports.postAdvancePayment = async (req, res) => {
 };
 
 // get advance payment data with user id and date range
-// get attendance with userId
+// get Advance with userId
 exports.getAdvancePayment = async (req, res) => {
   const { userId, startDate, endDate } = req.query;
 
@@ -27,6 +27,48 @@ exports.getAdvancePayment = async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch attendance data' });
+    res.status(500).json({ error: 'Failed to fetch Advance data' });
+  }
+};
+
+exports.deleteAdvance = async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res
+      .status(400)
+      .json({ message: 'Invalid request: ID is required.' });
+  }
+  console.log(id);
+
+  try {
+    const result = await advancePaymentModel.findByIdAndDelete(id);
+
+    if (!result) {
+      // If no document is found, return a 404 response
+      return res.status(404).json({ message: 'Advance record not found.' });
+    }
+
+    res
+      .status(201)
+      .json({ message: 'Advance record deleted successfully.', result });
+  } catch (err) {
+    res.status(500).json({
+      message: 'Failed to delete Advance record.',
+      error: err.message,
+    });
+  }
+};
+
+exports.editAdvancePayment = async (req, res) => {
+  const id = req.params.id;
+  const paymentData = req.body;
+  try {
+    const result = await advancePaymentModel.updateOne(
+      { _id: id },
+      { $set: paymentData }
+    );
+    res.status(201).send(result);
+  } catch (err) {
+    console.log(err);
   }
 };
