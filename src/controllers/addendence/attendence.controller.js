@@ -24,7 +24,7 @@ exports.getAllAttendances = async (req, res) => {
   const dateQuery = req.query.date; // Specific date (format: 2024-08-24T05:41:31.659Z)
 
   const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 10000;
+  const limit = parseInt(req.query.limit, 10) || 10;
   const skip = (page - 1) * limit;
 
   const id = parseInt(searchQuery, 10);
@@ -92,8 +92,7 @@ exports.getAllAttendances = async (req, res) => {
     // Fetch the data from MongoDB with pagination
     const attendances = await AttendanceModel.find(query)
       .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+      .limit(limit);
 
     // Get total count for pagination
     const totalRecords = await AttendanceModel.countDocuments(query);
@@ -114,7 +113,7 @@ exports.getAllAttendances = async (req, res) => {
 // get attendance
 // get attendance with pagination
 exports.getAttendanceWithUserId = async (req, res) => {
-  const { userId, startDate, endDate, month, page = 1, limit = 10 } = req.query; // Default page = 1, limit = 10
+  const { userId, startDate, endDate, month, page = 1, limit = 40 } = req.query; // Default page = 1, limit = 10
 
   try {
     // Initialize the query object
