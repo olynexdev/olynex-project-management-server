@@ -40,11 +40,15 @@ exports.addProduct = async (req, res) => {
 // get all products data with pagination and categories
 exports.getProducts = async (req, res) => {
   try {
-    const { page, category = '' } = req.query; //
+    const { page, category = '', search = "" } = req.query; //
     const limit = 10; // page limit
     const skip = (page - 1) * limit; // page skip
 
     const query = category ? { category } : {};
+   
+    if(search !== ""){
+      query.productId = search
+    }
 
     if (page == 0) {
       const products = await ProductListingModel.find().sort({ createdAt: -1 });
