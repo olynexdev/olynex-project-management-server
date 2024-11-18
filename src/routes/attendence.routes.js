@@ -18,7 +18,7 @@ const {
 const router = express.Router();
 
 // attendence related routes
-router.get('/get-attendence', verifyToken, verifyHr, getAllAttendances);
+router.get('/get-attendence', verifyToken,  getAllAttendances);
 router.delete('/delete-all-attendance', verifyToken, deleteAllAttendance);
 router.post('/post-attendance', verifyToken, postAttendance);
 router.patch('/update-attendance/:id', verifyToken, updateAttendance);
