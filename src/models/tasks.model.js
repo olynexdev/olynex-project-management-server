@@ -16,6 +16,7 @@ const taskSchema = new mongoose.Schema(
     keywords: { type: String, required: true },
     taskDeadline: { type: String, required: true },
     status: { type: String, required: true },
+    disclaimer: { type: String, required: true },
     taskTimer: { type: String },
     starPoint: { type: Number },
     taskResource: {
