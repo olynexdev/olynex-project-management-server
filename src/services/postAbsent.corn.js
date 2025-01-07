@@ -3,9 +3,9 @@ const AddendenceModel = require('../models/attendence.model');
 const UserModel = require('../models/users.model');
 const moment = require('moment');
 
-// Schedule a job to run at 5 PM every day except Fridays
+// Schedule a job to run at 3 PM every day except Fridays
 const scheduleAttendanceCheck = () => {
-  cron.schedule('0 16 * * 0-4,6-7', async () => {
+  cron.schedule('0 15 * * 0-4,6-7', async () => {
     try {
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0); // Start of the day
