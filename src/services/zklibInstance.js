@@ -1,10 +1,11 @@
 const ZKLib = require('node-zklib');
+const cron = require('node-cron');
 const AttendanceModel = require('../models/attendence.model');
 const moment = require('moment');
 const UserModel = require('../models/users.model');
 
-let lastSeenTimestamp = new Date();
 let zkInstance;
+let lastSeenTimestamp = new Date(); // Track the last log seen
 
 // Connect to ZKTeco device
 async function connectToZKLib() {
@@ -14,135 +15,227 @@ async function connectToZKLib() {
     console.log('Connected to ZKTeco device...');
     return true;
   } catch (err) {
-    console.error('Error connecting to ZKTeco device:', err.message, `[IP - ${err?.ip}]`);
+    console.error(
+      'Error connecting to ZKTeco device:',
+      err.message,
+      `[IP - ${err?.ip}]`
+    );
     return false;
   }
 }
 
-// Fetch attendance logs and process them in batches
+async function processAttendanceLog(log, isCronJob = false) {
+  const recordTime = moment(log.recordTime);
+
+  // Skip logs between 1:00 PM and 2:00 PM
+  if (
+    recordTime.isBetween(moment('13:00', 'HH:mm'), moment('14:15', 'HH:mm'))
+  ) {
+    console.log('Skipping logs between 1:00 PM and 2:00 PM');
+    return;
+  }
+
+  if (!log.deviceUserId) {
+    console.warn('Invalid log entry - deviceUserId missing.');
+    return;
+  }
+
+  // Find user by deviceUserId
+  const user = await UserModel.findOne({ userId: log.deviceUserId });
+  if (!user) {
+    console.log('User not found for deviceUserId:', log.deviceUserId);
+    return;
+  }
+
+  // Find existing attendance record for the day
+  const existingRecord = await AttendanceModel.findOne({
+    userId: log.deviceUserId,
+    date: recordTime.format('YYYY-MM-DD'),
+  });
+
+  if (existingRecord) {
+    // Do not update inGoing if it already exists (only update if empty and before 2:00 PM)
+    if (
+      !existingRecord.inGoing &&
+      recordTime.isBefore(moment('14:15', 'HH:mm'))
+    ) {
+      existingRecord.inGoing = log.recordTime; // Set inGoing
+      await existingRecord.save();
+      console.log(
+        `Set inGoing for user: ${log.deviceUserId} at ${log.recordTime}`
+      );
+    }
+
+    // Update outGoing with the latest record time after 2:00 PM
+    if (recordTime.isAfter(moment('14:15', 'HH:mm'))) {
+      existingRecord.outGoing = log.recordTime; // Update outGoing
+      await existingRecord.save();
+      console.log(
+        `Updated outGoing for user: ${log.deviceUserId} at ${log.recordTime}`
+      );
+    }
+  } else if (recordTime.isBefore(moment('14:15', 'HH:mm'))) {
+    // If no record exists and the log is before 2:00 PM, create a new record
+    const newRecord = new AttendanceModel({
+      userId: log.deviceUserId,
+      inGoing: log.recordTime, // Set inGoing
+      outGoing: null, // outGoing will be updated later after 2:00 PM
+      OfficeWorking: '00',
+      date: recordTime.format('YYYY-MM-DD'),
+      note: 'Present in this user, (Created by ZkTeco finger device)',
+      casual: false,
+      overTime: 0,
+    });
+    await newRecord.save();
+    console.log(`Inserted new inGoing record for user: ${log.deviceUserId}`);
+  } else if (isCronJob && recordTime.isAfter(moment('14:15', 'HH:mm'))) {
+    // In case of a cron job after 2:00 PM, if the log is after 2:00 PM, update outGoing if no existing record
+    const newRecord = new AttendanceModel({
+      userId: log.deviceUserId,
+      inGoing: null, // No inGoing as it's after 2:00 PM
+      outGoing: log.recordTime, // Set outGoing
+      OfficeWorking: '00',
+      date: recordTime.format('YYYY-MM-DD'),
+      note: 'Auto-created outgoing by cron job',
+      casual: false,
+      overTime: 0,
+    });
+    await newRecord.save();
+    console.log(
+      `Cron Job: Inserted new outGoing record for user: ${log.deviceUserId}`
+    );
+  }
+}
+
+// Fetch attendance logs and process them
 async function fetchAttendanceLogs() {
   try {
     const logs = await zkInstance.getAttendances();
 
     if (logs && Array.isArray(logs.data)) {
-      const newLogs = logs.data.filter(log => new Date(log.recordTime) > lastSeenTimestamp);
+      const newLogs = logs.data.filter(
+        log => new Date(log.recordTime) > lastSeenTimestamp
+      );
+      // Filter logs for the date 03-07-2024
+      // const targetDate = new Date('2024-09-14');
+      // const targetDateStart = new Date(targetDate.setHours(0, 0, 0, 0));
+      // const targetDateEnd = new Date(targetDate.setHours(23, 59, 59, 999));
+
+      // const newLogs2 = logs.data.filter((log) => {
+      //   const logDate = new Date(log.recordTime);
+      //   return logDate >= targetDateStart && logDate <= targetDateEnd;
+      // });
+      // console.log("log 2",newLogs2);
 
       if (newLogs.length > 0) {
-        const latestRecordTime = new Date(Math.max(...newLogs.map(log => new Date(log.recordTime))));
+        const latestRecordTime = new Date(
+          Math.max(...newLogs.map(log => new Date(log.recordTime)))
+        );
         lastSeenTimestamp = latestRecordTime;
 
-        // Process all logs in batches
-        await processAttendanceLogsInBatch(newLogs);
+        // Process logs immediately instead of batching
+        for (const log of newLogs) {
+          await processAttendanceLog(log); // Immediate processing of each log
+        }
       }
     } else {
       console.error('Invalid logs data:', logs.data);
     }
   } catch (err) {
     console.error('Error fetching attendance logs:', err.message);
+    connectToZKLib(); // Reconnect if an error occurs
   }
 }
 
-// Process logs in batches
-async function processAttendanceLogsInBatch(logs) {
-  const recordsToInsert = [];
-  const updatePromises = [];
+// Cron job logic to check missing users and post logs
+async function checkMissingUsers() {
+  const today = moment().format('YYYY-MM-DD');
 
-  for (const log of logs) {
+  // Get all user logs from the device today
+  const logs = await zkInstance.getAttendances();
+  const todayLogs = logs.data.filter(
+    log => moment(log.recordTime).format('YYYY-MM-DD') === today
+  );
+
+  // Find already posted records in DB for today
+  const postedUserIds = (await AttendanceModel.find({ date: today })).map(
+    att => att.userId
+  );
+
+  // Find logs for users that are not yet posted in DB today
+  const missingLogs = todayLogs.filter(
+    log => !postedUserIds.includes(log.deviceUserId)
+  );
+
+  // Insert missing users into DB based on log record time (with conditions)
+  for (const log of missingLogs) {
     const recordTime = moment(log.recordTime);
 
-    // Skip records between 1:30 PM and 2:45 PM
-    if (recordTime.isBetween(moment('13:30', 'HH:mm'), moment('14:45', 'HH:mm'))) {
-      console.log('Skipping time between 1:30 PM and 2:45 PM');
-      continue;
-    }
-
-    if (!log.deviceUserId) {
-      console.warn('Invalid log entry - deviceUserId missing.');
-      continue;
-    }
-
-    // Find user and check for existing attendance
-    const findUser = await UserModel.findOne({ userId: log.deviceUserId });
-    if (!findUser) {
-      console.log('User not found for deviceUserId:', log.deviceUserId);
-      continue;
-    }
-
-    const existingRecord = await AttendanceModel.findOne({
-      userId: log.deviceUserId,
-      date: recordTime.format('YYYY-MM-DD'),
-    });
-
-    if (existingRecord) {
-      // Update inGoing or outGoing based on time
-      if (recordTime.isBefore(moment('13:30', 'HH:mm')) && !existingRecord.inGoing) {
-        existingRecord.inGoing = log.recordTime;
-      } else if (recordTime.isAfter(moment('15:00', 'HH:mm'))) {
-        existingRecord.outGoing = log.recordTime;
-      }
-      updatePromises.push(existingRecord.save());
-    } else {
-      // Prepare new attendance record for batch insert
-      recordsToInsert.push({
-        userId: log.deviceUserId,
-        inGoing: recordTime.isBefore(moment('13:30', 'HH:mm')) ? log.recordTime : null,
-        outGoing: recordTime.isAfter(moment('15:00', 'HH:mm')) ? log.recordTime : null,
-        OfficeWorking: "00",
-        date: recordTime.format("YYYY-MM-DD"),
-        note: "Present in this user, (Created by ZkTeco finger device)",
-        casual: false,
-        overTime: 0,
-      });
+    if (recordTime.isBefore(moment('13:00', 'HH:mm'))) {
+      // Post inGoing if log time is before 1:00 PM
+      await processAttendanceLog(log, true);
+    } else if (recordTime.isAfter(moment('11.02', 'HH:mm'))) {
+      // Post outGoing if log time is after 2:00 PM
+      await processAttendanceLog(log, true);
     }
   }
 
-  // Insert new records in bulk
-  if (recordsToInsert.length > 0) {
-    await AttendanceModel.insertMany(recordsToInsert);
-    console.log(`Inserted ${recordsToInsert.length} new attendance records.`);
-  }
-
-  // Wait for all updates to finish
-  if (updatePromises.length > 0) {
-    await Promise.all(updatePromises);
-    console.log(`Updated ${updatePromises.length} existing attendance records.`);
-  }
+  console.log(`Checked and posted missing users for ${today}`);
 }
 
-// Initialize and handle retries
+// Cron job to run every hour to check missing users
+cron.schedule('0 9-17 * * *', async () => {
+  console.log('Running hourly cron job between 9 AM and 5 PM...');
+  const connected = await connectToZKLib();
+  if (connected) {
+    await checkMissingUsers();
+  } else {
+    console.error('Failed to connect to ZKTeco device.');
+  }
+});
+
+cron.schedule('*/5 0-8,18-23 * * *', async () => {
+  console.log('Running 5-minute cron job outside of 9 AM to 5 PM...');
+  const connected = await connectToZKLib();
+  if (connected) {
+    await checkMissingUsers();
+  } else {
+    console.error('Failed to connect to ZKTeco device.');
+  }
+});
+
+// Initialize and start ZKLib device connection
 async function initializeZKLib() {
   const maxRetries = 10;
   let connected = await connectToZKLib();
   let retries = 0;
 
   if (!connected) {
-    console.log('Retrying connection...');
+    console.log('Retrying ZKLib connection...');
   }
 
   while (!connected && retries < maxRetries) {
-    await new Promise(resolve => setTimeout(resolve, 60000)); // Retry every 60 seconds
+    await new Promise(resolve => setTimeout(resolve, 10000)); // Retry every 10 seconds
     connected = await connectToZKLib();
     retries++;
     console.log(`Retry attempt: ${retries}`);
   }
 
   if (connected) {
-    let isPolling = false;
+    console.log('ZKLib connected. Starting real-time log fetching...');
 
     setInterval(async () => {
-      if (isPolling) return;
-      isPolling = true;
       try {
-        await fetchAttendanceLogs();
+        await fetchAttendanceLogs(); // Fetch and process logs
       } catch (err) {
         console.error('Error processing logs:', err);
-      } finally {
-        isPolling = false;
       }
-    }, 10000); // Poll every 10 seconds
+    }, 5000); // Poll every 5 seconds for new logs
   } else {
     console.error('Failed to connect after maximum retries.');
   }
 }
 
 module.exports = initializeZKLib;
+
+// just comment

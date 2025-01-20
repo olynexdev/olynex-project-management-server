@@ -24,7 +24,7 @@ const productListingSchema = new mongoose.Schema(
       required: true,
     },
     template_size: {
-      type: [String],
+      type: String,
       required: true,
     },
     disclaimer: {

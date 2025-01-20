@@ -1,17 +1,20 @@
 const ProductListingModel = require('../../models/productListing.model');
+const TaskModel = require('../../models/tasks.model');
 
 // Assuming you have a ProductListingModel with a field 'productId'
 const getNextProductId = async () => {
   // Get the product with the highest productId
-  const latestProduct = await ProductListingModel.findOne().sort({ productId: -1 });
+  const latestProduct = await ProductListingModel.findOne().sort({
+    productId: -1,
+  });
 
   // Check if a product exists
   if (latestProduct) {
-    // If the latest productId is less than 2325, return 2325; otherwise, return latestProduct.productId + 1
-    return latestProduct.productId >= 2325 ? latestProduct.productId + 1 : 2325;
+    // If the latest productId is less than 2620, return 2620; otherwise, return latestProduct.productId + 1
+    return latestProduct.productId >= 2620 ? latestProduct.productId + 1 : 2620;
   } else {
-    // If no products exist, return 2325 as the first productId
-    return 2325;
+    // If no products exist, return 2620 as the first productId
+    return 2620;
   }
 };
 
@@ -25,7 +28,7 @@ exports.addProduct = async (req, res) => {
 
     // Save the new product to the database
     const result = await ProductListingModel.create(newProduct);
-    
+
     // Send the created product as a response
     res.status(201).send(result);
   } catch (error) {
@@ -34,15 +37,18 @@ exports.addProduct = async (req, res) => {
   }
 };
 
-
 // get all products data with pagination and categories
 exports.getProducts = async (req, res) => {
   try {
-    const { page, category = '' } = req.query; //
+    const { page, category = '', search = "" } = req.query; //
     const limit = 10; // page limit
     const skip = (page - 1) * limit; // page skip
 
     const query = category ? { category } : {};
+   
+    if(search !== ""){
+      query.productId = search
+    }
 
     if (page == 0) {
       const products = await ProductListingModel.find().sort({ createdAt: -1 });
@@ -94,13 +100,37 @@ exports.deleteProduct = async (req, res) => {
 
 // Update a specific product by ID
 exports.updateProduct = async (req, res) => {
-  const productId = req.params.id;
+  const id = req.params.id;
   const updateData = req.body;
+  const {
+    keywords,
+    template_size,
+    number_of_pages,
+    productId,
+    category,
+    template_category,
+    department,
+    title,
+    color_space,
+  } = updateData;
   try {
-    const result = await ProductListingModel.updateOne(
-      { _id: productId },
-      updateData
-    );
+    const result = await ProductListingModel.updateOne({ _id: id }, updateData);
+    if (keywords || template_size || number_of_pages) {
+      const result = await TaskModel.updateOne(
+        { taskId: productId },
+        {
+          keywords: keywords,
+          pages: number_of_pages,
+          size: template_size,
+          category,
+          categoryNumber: template_category,
+          department,
+          title,
+          colorSpace: color_space,
+        }
+      );
+      console.log(result);
+    }
     res.status(200).send(result);
   } catch (err) {
     res.status(500).send({ message: 'Error updating product', error: err });
