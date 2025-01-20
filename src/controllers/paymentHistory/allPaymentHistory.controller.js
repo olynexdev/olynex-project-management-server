@@ -2,8 +2,8 @@ const advancePaymentModel = require('../../models/advancePayment.model');
 const paymentHIstoryModal = require('../../models/paymentHistory.model');
 
 exports.getAllPaymentHistory = async (req, res) => {
-  const { month, tabValue } = req.query;
-  const currentYear = new Date().getFullYear();
+  const { month, tabValue, year } = req.query;
+  const currentYear = parseInt(year);
 
   try {
     const startDate = new Date(`${currentYear}-${month}-01T00:00:00.000Z`);
@@ -13,6 +13,9 @@ exports.getAllPaymentHistory = async (req, res) => {
     let monthQuery = {
       createdAt: { $gte: startDate, $lte: endDate },
     };
+    if (month === 'All') {
+      monthQuery = {};
+    }
     let result;
 
     if (tabValue === 'monthly') {

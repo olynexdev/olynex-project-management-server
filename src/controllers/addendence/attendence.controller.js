@@ -70,8 +70,7 @@ exports.getAllAttendances = async (req, res) => {
       const endNewDate = new Date(selectedDate.setUTCHours(23, 59, 59, 999)); // End of the selected day
 
       query.createdAt = { $gte: startNewDate, $lt: endNewDate };
-      query.userId = id; // Ensure it's filtering by the user's ID
-      console.log('inside of date and user', query, selectedDate);
+      query.userId = id;
     }
 
     // 3. If month=something, date='null', search=empty or 'null' => All users' specific month data
@@ -80,7 +79,6 @@ exports.getAllAttendances = async (req, res) => {
       (dateQuery == 'null' || dateQuery == 'undefined') &&
       (searchQuery == 'null' || searchQuery === '')
     ) {
-      console.log('object', query);
       if (monthMap[monthQuery] !== undefined) {
         const selectedMonth = monthMap[monthQuery];
         const currentYear = new Date().getFullYear();
@@ -115,8 +113,8 @@ exports.getAllAttendances = async (req, res) => {
 // get attendance
 // get attendance with pagination
 exports.getAttendanceWithUserId = async (req, res) => {
-  const { userId, startDate, endDate, month, page = 1, limit = 10 } = req.query; // Default page = 1, limit = 10
-  
+  const { userId, startDate, endDate, month, page = 1, limit = 40 } = req.query; // Default page = 1, limit = 10
+
   try {
     // Initialize the query object
     const query = {};
@@ -132,6 +130,7 @@ exports.getAttendanceWithUserId = async (req, res) => {
       const startDate = new Date(`${year}-${month}-01T00:00:00.000Z`);
       // Calculate the last day of the month
       const endDate = new Date(year, parseInt(month), 0, 23, 59, 59, 999);
+
       // Query for records within the selected month
       query.createdAt = {
         $gte: startDate,
@@ -140,8 +139,8 @@ exports.getAttendanceWithUserId = async (req, res) => {
     } else if (startDate && endDate) {
       // If a date range is provided, use it to query records
       query.date = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
+        $gte: startDate,
+        $lte: endDate,
       };
     }
 
@@ -175,7 +174,6 @@ exports.getAttendanceWithUserId = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch attendance data' });
   }
 };
-
 
 // delete all attendances
 exports.deleteAllAttendance = async (req, res) => {
@@ -223,17 +221,54 @@ exports.postAttendance = async (req, res) => {
   }
 
   try {
-    const result = await AttendanceModel.create(attendance);
-    res
-      .status(201)
-      .send({ message: 'Attendance posted successfully!', data: result });
+    if (attendance.casual === true) {
+      // Check if attendance for the user and date already exists
+      const existingRecord = await AttendanceModel.findOne({
+        userId: attendance.userId,
+        date: attendance.date,
+      });
+
+      if (existingRecord) {
+        // Update the existing casual attendance record
+        existingRecord.inGoing = attendance.inGoing || existingRecord.inGoing;
+        existingRecord.outGoing =
+          attendance.outGoing || existingRecord.outGoing;
+        existingRecord.note = attendance.note || existingRecord.note;
+        existingRecord.OfficeWorking =
+          attendance.OfficeWorking || existingRecord.OfficeWorking;
+        existingRecord.casual = attendance.casual; // Should remain true
+        existingRecord.overTime =
+          attendance.overTime || existingRecord.overTime;
+
+        // Save the updated record
+        const updatedResult = await existingRecord.save();
+        return res.status(200).send({
+          message: 'Casual attendance updated successfully!',
+          data: updatedResult,
+        });
+      } else {
+        // If no record exists, create a new one
+        const newCasualRecord = await AttendanceModel.create(attendance);
+        return res.status(201).send({
+          message: 'New casual attendance posted successfully!',
+          data: newCasualRecord,
+        });
+      }
+    } else {
+      // Regular attendance handling (non-casual)
+      const result = await AttendanceModel.create(attendance);
+      return res.status(201).send({
+        message: 'Attendance posted successfully!',
+        data: result,
+      });
+    }
   } catch (err) {
     if (err.name === 'ValidationError') {
       return res
         .status(400)
         .send({ message: 'Validation error', details: err.message });
     }
-    res
+    return res
       .status(500)
       .send({ message: 'Attendance post failed!', error: err.message });
   }

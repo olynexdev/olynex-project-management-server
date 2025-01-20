@@ -1,3 +1,4 @@
+const ProductListingModel = require('../../models/productListing.model');
 const TasksModel = require('../../models/tasks.model');
 const UserModel = require('../../models/users.model');
 
@@ -9,6 +10,24 @@ exports.addTask = async (req, res) => {
     res.status(201).send(result);
   } catch (error) {
     res.status(500).send({ message: 'Task Adding Error!', error });
+  }
+};
+
+// delete specific task with _id
+exports.deleteTask = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await TasksModel.deleteOne({ taskId: id });
+    console.log('result', result);
+    await ProductListingModel.updateOne({ productId: id }, { used: false });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).send({ message: 'Task not found' });
+    }
+
+    res.status(200).send({ message: 'Task successfully deleted', result });
+  } catch (err) {
+    res.status(500).send({ message: `Task delete failed: ${err}` });
   }
 };
 
@@ -32,7 +51,8 @@ exports.getTasks = async (req, res) => {
     // Find tasks with pagination and filtering
     const tasks = await TasksModel.find(filter)
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
     // Calculate total pages
     const totalPages = Math.ceil(totalTasks / limit);
     // Send the paginated tasks with total pages
@@ -194,5 +214,52 @@ exports.searchTask = async (req, res) => {
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching tasks' });
+  }
+};
+
+exports.getAllSubmittedTasks = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, userId } = req.query;
+    const skip = (page - 1) * limit;
+    // Convert userId to number if provided
+    const requestedUserId = userId ? parseInt(userId, 10) : undefined;
+
+    const isProjectManager = await UserModel.findOne({
+      userId: requestedUserId,
+      'personalInfo.designation': 'project_manager',
+    });
+
+    if (isProjectManager) {
+      const isCeo = await UserModel.findOne({
+        'personalInfo.designation': 'ceo',
+      });
+      numericUserId = isCeo.userId;
+    }
+
+    // Build the filter query
+    const filter = numericUserId
+      ? {
+          $or: [
+            { approvalChain: { $elemMatch: { userId: numericUserId } } },
+            { 'taskReceiver.userId': numericUserId },
+          ],
+        }
+      : {};
+    // Get the total count of tasks based on the filter
+    const totalTasks = await TasksModel.countDocuments(filter);
+    // Find tasks with pagination and filtering
+    const tasks = await TasksModel.find(filter)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+    // Calculate total pages
+    const totalPages = Math.ceil(totalTasks / limit);
+    // Send the paginated tasks with total pages
+    res.status(200).send({
+      tasks,
+      totalPages,
+    });
+  } catch (err) {
+    res.status(500).send({ message: 'Failed to retrieve tasks', err });
   }
 };

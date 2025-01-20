@@ -1,3 +1,4 @@
+const ProjectImagesModal = require('../../models/projectImages.model');
 const TaskModel = require('../../models/tasks.model');
 
 exports.ceoAcceptTask = async (req, res) => {
@@ -183,6 +184,9 @@ exports.ceoRejectTask = async (req, res) => {
 
     // Save the updated task
     await task.save();
+
+    await ProjectImagesModal.deleteOne({taskId: task?.taskId})
+
 
     res.status(200).send({ message: 'Task accept success!', task });
   } catch (err) {
