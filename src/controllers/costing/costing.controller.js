@@ -14,7 +14,7 @@ exports.addCosting = async (req, res) => {
 // get all Costing data
 exports.getCosting = async (req, res) => {
   const month = req.query.month;
-  const currentYear = new Date().getFullYear();
+  const currentYear = req.query.year;
   try {
     const startDate = new Date(`${currentYear}-${month}-01T00:00:00.000Z`);
     const endDate = new Date(currentYear, parseInt(month), 0, 23, 59, 59, 999);
