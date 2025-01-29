@@ -10,11 +10,11 @@ const getNextProductId = async () => {
 
   // Check if a product exists
   if (latestProduct) {
-    // If the latest productId is less than 2620, return 2620; otherwise, return latestProduct.productId + 1
-    return latestProduct.productId >= 2620 ? latestProduct.productId + 1 : 2620;
+    // If the latest productId is less than 3864, return 3864; otherwise, return latestProduct.productId + 1
+    return latestProduct.productId >= 3864 ? latestProduct.productId + 1 : 3864;
   } else {
-    // If no products exist, return 2620 as the first productId
-    return 2620;
+    // If no products exist, return 3864 as the first productId
+    return 3864;
   }
 };
 

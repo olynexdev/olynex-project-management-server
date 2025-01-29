@@ -333,6 +333,7 @@ exports.updateAttendance = async (req, res) => {
 exports.editAttendance = async (req, res) => {
   const id = req.params.id;
   const attendanceData = req.body;
+
   try {
     const result = await AttendanceModel.updateOne(
       { _id: id },
