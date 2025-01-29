@@ -22,7 +22,7 @@ router.get('/get-attendence', verifyToken, getAllAttendances);
 router.delete('/delete-all-attendance', verifyToken, deleteAllAttendance);
 router.post('/post-attendance', verifyToken, postAttendance);
 router.patch('/update-attendance/:id', verifyToken, updateAttendance);
-router.patch('/edit-attendance/:id', editAttendance);
+router.patch('/edit-attendance/:id', verifyToken, editAttendance);
 router.get('/get-attendance-by-user-id', verifyToken, getAttendanceWithUserId);
 router.get('/get-attendance-count/:month', verifyToken, attendanceCounts);
 router.delete('/delete-attendance/:id', verifyToken, deleteAttendance);
